@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>poc</artifactId>
+        <groupId>poc</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>drools</artifactId>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.drools/drools-core -->
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-core</artifactId>
+            <version>6.3.0.CR2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.drools/drools-compiler -->
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-compiler</artifactId>
+            <version>6.3.0.CR2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.drools/knowledge-api -->
+        <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>knowledge-api</artifactId>
+            <version>6.3.0.CR2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.jbpm.jbpm4/jbpm-bpmn -->
+        <!--<dependency>-->
+            <!--<groupId>org.jbpm.jbpm4</groupId>-->
+            <!--<artifactId>jbpm-bpmn</artifactId>-->
+            <!--<version>RELEASE</version>-->
+        <!--</dependency>-->
+
+
+
+    </dependencies>
+
+</project>

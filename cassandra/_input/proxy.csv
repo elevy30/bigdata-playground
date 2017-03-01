@@ -1,0 +1,11 @@
+"id BIGINT PRIMARY KEY, " +
+                    "cs_username TEXT, " +
+                    "date TEXT, " +
+                    "time TIMESTAMP, " +
+                    "sc_status INT, " +
+                    "time_taken DOUBLE, " +
+                    "sc_bytes DOUBLE, " +
+                    "cs_bytes DOUBLE, " +
+                    "cs_host TEXT, " +
+                    "s_action TEXT, " +
+                    "cs_method TEXT)");

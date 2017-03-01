@@ -1,0 +1,27 @@
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/cql http://www.springframework.org/schema/data/cassandra/spring-cql-1.0.xsd
+	    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <cassandra:cluster id="cassandraCluster"
+                       contact-points="127.0.0.1" port="9042"/>
+
+    <cassandra:session id="session" cluster-ref="cassandraCluster"
+                       keyspace-name="thetaray"/>
+
+    <cassandra:session keyspace-name="thetaray"/>
+
+    <cassandra:template id="cqlTemplate"/>
+
+
+    <cassandra:repositories base-package="poc.repo"/>
+
+    <cassandra:mapping entity-base-packages="poc.model"/>
+    <cassandra:converter/>
+
+</beans:beans>
