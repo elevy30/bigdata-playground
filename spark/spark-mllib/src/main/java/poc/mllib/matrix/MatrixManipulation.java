@@ -1,4 +1,4 @@
-package poc.mllib;
+package poc.mllib.matrix;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;

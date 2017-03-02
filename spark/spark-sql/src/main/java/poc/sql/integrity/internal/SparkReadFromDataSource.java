@@ -49,5 +49,6 @@ public class SparkReadFromDataSource implements Serializable {
 
         SparkReadFromDataSource app = new SparkReadFromDataSource(conf);
         app.run();
+
     }
 }
