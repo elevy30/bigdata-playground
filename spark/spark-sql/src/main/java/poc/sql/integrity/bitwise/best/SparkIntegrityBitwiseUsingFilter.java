@@ -26,8 +26,8 @@ import java.util.Map;
  */
 public class SparkIntegrityBitwiseUsingFilter implements Serializable {
 
-    Prop prop = new Properties_1();
-    BigFilterPageBeforeFilter_Map bigFilter = new BigFilterPageBeforeFilter_Map(prop);
+    private Prop prop = new Properties_1();
+    private BigFilterPageBeforeFilter_Map bigFilter = new BigFilterPageBeforeFilter_Map(prop);
 
     private SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");

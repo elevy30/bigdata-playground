@@ -5,6 +5,7 @@ import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import poc.commons.time.Stream;
+import scala.Serializable;
 import scala.Tuple2;
 
 import java.util.Map;
@@ -15,7 +16,7 @@ import static org.apache.spark.sql.functions.col;
 /**
  * Created by eyallevy on 27/02/17.
  */
-public class DatasetHelper {
+public class DatasetHelper implements Serializable {
 
     public Dataset<Row> collectIdsForSpecificPage(Dataset<Row> idsSorted, long startFrom, int pageSize, String columnName, Stream stream) {
         stream.start();

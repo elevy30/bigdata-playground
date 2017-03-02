@@ -18,10 +18,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
 
 
 /**
@@ -52,9 +50,9 @@ import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
  *
  */
 public class BigFilter implements Serializable {
-    Prop prop = new Properties_1();
-    FileHelper fileHelper = new FileHelper();
-    DatasetHelper datasetHelper = new DatasetHelper();
+    private Prop prop = new Properties_1();
+    private FileHelper fileHelper = new FileHelper();
+    private DatasetHelper datasetHelper = new DatasetHelper();
 
     public SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
@@ -92,8 +90,8 @@ public class BigFilter implements Serializable {
 
         System.out.println("Filter the source DF by the ids Map");
         streamFilter.start();
-//        Dataset<Row> joined = filter(datasetWithId, idsMap).sort(TR_ID);
-        Dataset<Row> joined = filter(datasource, idsMap);
+//        Dataset<Row> joined = filterByMap(datasetWithId, idsMap).sort(TR_ID);
+        Dataset<Row> joined = filterByMap(datasource, idsMap);
         streamFilter.stop();
         System.out.println("Filter Duration " + streamFilter.getDuration());
 
@@ -107,8 +105,7 @@ public class BigFilter implements Serializable {
 
     private Map<Long, Boolean> collectAsMap(Dataset<Row> rowDataset) {
         JavaPairRDD<Long, Boolean> idsMapJavaPairRDD = rowDataset.select(prop.getId()).toJavaRDD().mapToPair(row -> new Tuple2<Long, Boolean>(row.getLong(0), true));
-        Map<Long, Boolean> idsMap = idsMapJavaPairRDD.collectAsMap();
-        return idsMap;
+        return idsMapJavaPairRDD.collectAsMap();
     }
 
     private Map<Long, Boolean> convertToMap(Dataset<Row> rowDataset) {
@@ -120,16 +117,12 @@ public class BigFilter implements Serializable {
         return idsMap;
     }
 
-    private Dataset<Row> filter(Dataset<Row> fullDataset, Map<Long, Boolean> idsMap) {
-        Dataset<Row> filtered = fullDataset.filter((FilterFunction<Row>) row -> {
-            Boolean aBoolean = idsMap.get(row.getAs(prop.getId()));
-            if(aBoolean != null){
-                return true;
-            }else{
-                return false;
-            }
+    private Dataset<Row> filterByMap(Dataset<Row> fullDataset, Map<Long, Boolean> idsMap) {
+        return fullDataset.filter((FilterFunction<Row>) row -> {
+            Long id = row.getAs(prop.getId());
+            Boolean aBoolean = idsMap.get(id);
+            return aBoolean != null;
         });
-        return filtered;
     }
 
     private Dataset<Row> filterPage(Dataset<Row> df, int skip, int limit, boolean isFiltered, boolean alreadySorted) {

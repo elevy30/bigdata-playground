@@ -5,6 +5,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import poc.sql.integrity.internal.helper.DatasetHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
+import poc.sql.integrity.internal.prop.Prop;
+import poc.sql.integrity.internal.prop.Properties_1;
 
 import java.io.Serializable;
 
@@ -15,28 +17,28 @@ import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
  */
 public class FileGenerator implements Serializable {
 
-    private static final String TR_ID = "ID";
-    private static final String CSV_PATH = "file:///opt/Dropbox/dev/poc/_resources/bigdata/QR_500K.csv";
-    private static final String IDS_WITH_IDS_PATH = "file:///opt/Dropbox/dev/poc/_resources/bigdata/QR_500K_ID.csv";
-    private static final String ONLY_IDS_PATH = "file:///opt/Dropbox/dev/poc/_resources/bigdata/ID.csv";
+    private Properties_1 prop;
+    private FileHelper fileHelper = new FileHelper();
+    private DatasetHelper datasetHelper = new DatasetHelper();
 
-    FileHelper fileHelper = new FileHelper();
-    DatasetHelper datasetHelper = new DatasetHelper();
+    public FileGenerator(Properties_1 prop) {
+        this.prop = prop;
+    }
 
     public void generateFilesWithIDS(SQLContext sqlContext) {
         System.out.println("Read src data-frame from CSV file");
-        Dataset<Row> fullDataset = fileHelper.readCSV(sqlContext, CSV_PATH);
+        Dataset<Row> fullDataset = fileHelper.readCSV(sqlContext, prop.getCsvPath());
 
         System.out.println("Add IDs to data-frame and create new CSV file");
-        Dataset<Row> datasetWithId = addIdsToCSV(fullDataset, IDS_WITH_IDS_PATH);
+        Dataset<Row> datasetWithId = addIdsToCSV(fullDataset, prop.getDataSourcePath());
 
         System.out.println("write ids to CSV file");
-        Dataset<Row> idsOnly20PrecentDataset = writeIntegrityIdsToCSV(datasetWithId, ONLY_IDS_PATH);
+        Dataset<Row> idsOnly20PrecentDataset = writeIntegrityIdsToCSV(datasetWithId, prop.getIdsOnlyPath());
     }
 
     private Dataset<Row> addIdsToCSV(Dataset<Row> fullDataset, String csvPath) {
         System.out.println("Adding ids to the src Data-Frame");
-        Dataset<Row> datasetWithId = fullDataset.withColumn(TR_ID, monotonicallyIncreasingId());
+        Dataset<Row> datasetWithId = fullDataset.withColumn(prop.getId(), monotonicallyIncreasingId());
         datasetWithId = datasetWithId.cache();
         System.out.println(datasetWithId.count());
 
@@ -47,7 +49,7 @@ public class FileGenerator implements Serializable {
 
     private Dataset<Row> writeIntegrityIdsToCSV(Dataset<Row> datasetWithId, String csvPath) {
         System.out.println("Filter 20% of the data into new DF and get only the IDs");
-        Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(datasetWithId, TR_ID);
+        Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(datasetWithId, prop.getId());
         idsOnly20PrecentDataset = idsOnly20PrecentDataset.cache();
         System.out.println(idsOnly20PrecentDataset.count());
 

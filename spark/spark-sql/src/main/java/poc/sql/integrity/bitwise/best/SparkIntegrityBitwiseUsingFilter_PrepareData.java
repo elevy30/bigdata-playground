@@ -13,6 +13,12 @@ import java.io.Serializable;
  */
 public class SparkIntegrityBitwiseUsingFilter_PrepareData implements Serializable {
 
+    public static void main(String[] args) {
+        SparkIntegrityBitwiseUsingFilter_PrepareData app = new SparkIntegrityBitwiseUsingFilter_PrepareData();
+        SparkSession sparkSession = app.init();
+        app.run(sparkSession);
+    }
+
     private SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
@@ -22,14 +28,6 @@ public class SparkIntegrityBitwiseUsingFilter_PrepareData implements Serializabl
     private void run(SparkSession sc) {
         Prop prop = new Properties_1();
         BitwiseGenerator fileBitwiseGenerator = new BitwiseGenerator(sc, prop);
-
-       fileBitwiseGenerator.generateDummyIntegrityBitwise(sc);
-
-    }
-
-    public static void main(String[] args) {
-        SparkIntegrityBitwiseUsingFilter_PrepareData app = new SparkIntegrityBitwiseUsingFilter_PrepareData();
-        SparkSession sparkSession = app.init();
-        app.run(sparkSession);
+       fileBitwiseGenerator.generateDummyIntegrityBitwise();
     }
 }

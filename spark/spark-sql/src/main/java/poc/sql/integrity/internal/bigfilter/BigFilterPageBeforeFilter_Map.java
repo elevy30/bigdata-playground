@@ -28,10 +28,10 @@ import static org.apache.spark.sql.functions.col;
  * =======
  */
 public class BigFilterPageBeforeFilter_Map implements Serializable {
-    Prop prop;
-    Stream streamFilter = new Stream();
-    FileHelper fileHelper = new FileHelper();
-    DatasetHelper datasetHelper = new DatasetHelper();
+    private Prop prop;
+    private Stream streamFilter = new Stream();
+    private FileHelper fileHelper = new FileHelper();
+    private DatasetHelper datasetHelper = new DatasetHelper();
 
     public BigFilterPageBeforeFilter_Map(Prop prop) {
         this.prop = prop;
@@ -70,7 +70,6 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
         bigFilter(datasetWithId, idsOnly20PrecentDataset.sort(col(prop.getId())));
     }
 
-
     public void bigFilter(Dataset<Row> dataSource, Dataset<Row> idsSorted) {
         boolean hasNextPage = false;
         Long startFrom = 0L;
@@ -107,7 +106,6 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
 
     }
 
-
     private void statistics(Long startFrom, int pageNumber, Dataset<Row> pageIdsDS, Map<Long, Boolean> pageIdsMap, Dataset<Row> page) {
         System.out.println("----- STATISTICS -----");
         System.out.println("Max id in page " + (pageNumber + 1) + " is " + startFrom);
@@ -115,7 +113,6 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
         System.out.println("# Of ids in map " + pageIdsMap.size());
         System.out.println("# Of Filtered Lines in page " + (pageNumber + 1) + ": " + page.count());
     }
-
 
     public static void main(String[] args) {
         Prop prop = new Properties_1();

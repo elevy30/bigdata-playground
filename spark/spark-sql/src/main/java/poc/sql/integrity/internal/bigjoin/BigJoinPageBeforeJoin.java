@@ -19,10 +19,10 @@ import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
  */
 public class BigJoinPageBeforeJoin implements Serializable {
 
-    Prop prop = new Properties_1();
-    Stream streamFilter = new Stream();
-    DatasetHelper datasetHelper = new DatasetHelper();
-    FileHelper fileHelper = new FileHelper();
+    private Prop prop = new Properties_1();
+    private Stream streamFilter = new Stream();
+    private DatasetHelper datasetHelper = new DatasetHelper();
+    private FileHelper fileHelper = new FileHelper();
 
     public SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
@@ -94,7 +94,6 @@ public class BigJoinPageBeforeJoin implements Serializable {
 
         return joined;
     }
-
 
     public static void main(String[] args) {
         BigJoinPageBeforeJoin app = new BigJoinPageBeforeJoin();

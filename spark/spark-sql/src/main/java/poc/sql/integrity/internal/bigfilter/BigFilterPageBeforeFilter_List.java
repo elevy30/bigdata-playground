@@ -8,7 +8,6 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import poc.commons.time.Stream;
 import poc.sql.integrity.internal.helper.DatasetHelper;
-import poc.sql.integrity.internal.generator.FileGenerator;
 import poc.sql.integrity.internal.helper.FileHelper;
 import poc.sql.integrity.internal.helper.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
 
 
 /**
@@ -79,7 +77,7 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
                 startFrom = pageIdsList.stream().max(Long::compareTo).orElse(-1L);
 
                 System.out.println("Filter the source DF by the ids Map");
-                Dataset<Row> page = filter(datasource, pageIdsList);
+                Dataset<Row> page = filterByList(datasource, pageIdsList);
 //                statistics(startFrom, pageNumber, pageIdsDS, pageIdsMap, page);
 
                 startFrom++;
@@ -112,10 +110,10 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
         return ids;
     }
 
-    private Dataset<Row> filter(Dataset<Row> fullDataset, List<Long> idsList) {
+    private Dataset<Row> filterByList(Dataset<Row> fullDataset, List<Long> idsList) {
         streamFilter.start();
 
-        Dataset<Row> filtered = fullDataset.filter((FilterFunction<Row>) row -> idsList.contains(row.getAs(prop.getId())) ? true : false);
+        Dataset<Row> filtered = fullDataset.filter((FilterFunction<Row>) row -> idsList.contains(row.getAs(prop.getId())));
         filtered.show();
 
         streamFilter.stop();
