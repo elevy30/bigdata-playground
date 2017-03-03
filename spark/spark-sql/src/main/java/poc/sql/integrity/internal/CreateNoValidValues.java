@@ -10,17 +10,10 @@ import java.io.Serializable;
  */
 public class CreateNoValidValues implements Serializable {
 
-    private static final String COLUMN_NAME = "columnName";
-    public static final String TR_SEQUENCE = "Id";
-    public static final String CS_BYTES = "cs_bytes";
-    public static final String SC_BYTES = "sc_bytes";
     //    public static final String CSV_PATH = "file:///Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/data/proxy_fixed.csv";
-    public static final String CSV_PATH = "file:///opt/Dropbox/dev/poc/data/proxy_fixed.csv";
+    private static final String CSV_PATH = "file:///opt/Dropbox/dev/poc/data/proxy_fixed.csv";
     //    public static final String PARQUET_PATH = "file:///Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/data/proxy_fixed";
-    public static final String PARQUET_PATH = "file:///opt/Dropbox/dev/poc/data/proxy_fixed";
-
-    public CreateNoValidValues() {
-    }
+    private static final String PARQUET_PATH = "file:///opt/Dropbox/dev/poc/data/proxy_fixed";
 
     public void run() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/01_poc/hadoop_home");
@@ -57,13 +50,11 @@ public class CreateNoValidValues implements Serializable {
     }
 
     private Dataset<Row> readParquet(SQLContext sqlContext) {
-        Dataset<Row> dataSetParquet = sqlContext.read()
+        return sqlContext.read()
                 .option("header", true)
                 .option("sep", ",")
                 .option("inferSchema", "true")
                 .parquet(PARQUET_PATH);
-
-        return dataSetParquet;
     }
 
 

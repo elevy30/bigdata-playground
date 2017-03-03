@@ -62,24 +62,17 @@ public class BigJoinWithCassandra implements Serializable {
 
 
     private Dataset<Row> join(Dataset<Row> fullDataset, Dataset<Row> idsDataset) {
-        Column joinedColumn = fullDataset.col(TR_ID).equalTo(idsDataset.col(TR_ID));
-        Dataset<Row> joined = fullDataset.intersect(idsDataset);
-        return joined;
+//        Column joinedColumn = fullDataset.col(TR_ID).equalTo(idsDataset.col(TR_ID));
+        return fullDataset.intersect(idsDataset);
     }
 
     private Dataset<Row> filter20Precent(Dataset<Row> rowDataset) {
         Random r = new Random();
-        return rowDataset.filter((FilterFunction<Row>) row -> {
-                    if (r.nextFloat() <= 0.20F) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-        ).select(col(TR_ID));
+        return rowDataset.filter((FilterFunction<Row>) row -> r.nextFloat() <= 0.20F).select(col(TR_ID));
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private Dataset<Row> readPage(Dataset<Row> df, int skip, int limit, boolean isFiltered, boolean alreadySorted) {
         Dataset<Row> skipped = df.filter(col(TR_ID).geq(skip));
         if (!isFiltered) {
@@ -101,6 +94,7 @@ public class BigJoinWithCassandra implements Serializable {
                 .csv(CSV_PATH);
     }
 
+    @SuppressWarnings("unused")
     private Dataset<Row> readParquet(SQLContext sqlContext) {
         return sqlContext.read()
                 .option("header", true)

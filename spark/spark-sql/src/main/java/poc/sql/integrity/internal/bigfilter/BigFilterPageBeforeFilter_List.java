@@ -97,7 +97,7 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
     private List<Long> collectAsList(Dataset<Row> rowDataset) {
         streamFilter.start();
 
-        JavaPairRDD<Long, Boolean> idsMapJavaPairRDD = rowDataset.select(prop.getId()).toJavaRDD().mapToPair(row -> new Tuple2<Long, Boolean>(row.getLong(0), true));
+        JavaPairRDD<Long, Boolean> idsMapJavaPairRDD = rowDataset.select(prop.getId()).toJavaRDD().mapToPair(row -> new Tuple2<>(row.getLong(0), true));
         List<Tuple2<Long, Boolean>> collect = idsMapJavaPairRDD.collect();
         List<Long> ids = new ArrayList<>();
         for (Tuple2 tuple: collect) {
@@ -114,6 +114,7 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
     private Dataset<Row> filterByList(Dataset<Row> fullDataset, List<Long> idsList) {
         streamFilter.start();
 
+        @SuppressWarnings("SuspiciousMethodCalls")
         Dataset<Row> filtered = fullDataset.filter((FilterFunction<Row>) row -> idsList.contains(row.getAs(prop.getId())));
         filtered.show();
 

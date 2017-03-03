@@ -32,7 +32,7 @@ public class SparkReadFromDataSource implements Serializable {
         SQLContext sqlContext = new SQLContext(sc);
         Dataset<Row> dataSet = sqlContext.read().option("header", true).parquet("/opt/tr/data-source/output/50/staging/integrity");
 
-        System.out.println("###########_convert dataframe to javardd");
+        System.out.println("###########_convert dataFrame to javaRDD");
         JavaRDD dataRdd = dataSet.toJavaRDD();
 
 

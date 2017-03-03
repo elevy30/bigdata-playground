@@ -39,8 +39,6 @@ public class BigFilterWithPairRDD implements Serializable {
     private static final String CSV_PATH = "file:///opt/Dropbox/dev/poc/_resources/data/proxy_fixed.csv";
     private static final String PARQUET_PATH = "file:///opt/Dropbox/dev/poc/_resources/data/proxy_fixed";
 
-    Stream stream = null;
-
     public SparkSession init() {
         System.out.println("NOT WORKING - NOT WORKING - NOT WORKING - NOT WORKING - NOT WORKING");
         System.out.println("NOT WORKING - NOT WORKING - NOT WORKING - NOT WORKING - NOT WORKING");

@@ -68,7 +68,7 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
     }
 
     public void bigFilter(Dataset<Row> dataSource, Dataset<Row> idsSorted) {
-        boolean hasNextPage = false;
+        boolean hasNextPage;
         Long startFrom = 0L;
         int pageNumber = 0;
         int pageSize = 100;
@@ -87,6 +87,7 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
 
                 System.out.println("Filter the source DF by the ids Map");
                 Dataset<Row> page = datasetHelper.filter(dataSource, pageIdsMap, prop.getId(), streamFilter);
+                page.show();
 //                statistics(startFrom, pageNumber, pageIdsDS, pageIdsMap, page);
 
                 startFrom++;
@@ -100,9 +101,9 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
             System.err.println("\n\nTotal Duration: " + streamFilter.totalDuration + "\n\n");
         }
         while (hasNextPage);
-
     }
 
+    @SuppressWarnings("unused")
     private void statistics(Long startFrom, int pageNumber, Dataset<Row> pageIdsDS, Map<Long, Boolean> pageIdsMap, Dataset<Row> page) {
         System.out.println("----- STATISTICS -----");
         System.out.println("Max id in page " + (pageNumber + 1) + " is " + startFrom);

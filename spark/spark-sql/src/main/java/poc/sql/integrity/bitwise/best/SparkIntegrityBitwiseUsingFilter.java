@@ -44,7 +44,7 @@ public class SparkIntegrityBitwiseUsingFilter implements Serializable {
 
         Stream stream = new Stream();
         stream.start();
-        System.out.println("########### Read datasource csv file");
+        System.out.println("########### Read dataSource csv file");
         Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
         stream.stop();
         System.err.println(stream.getDuration());//32110

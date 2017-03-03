@@ -39,6 +39,7 @@ public class FileHelper implements Serializable{
                 .csv(filePath);
     }
 
+    @SuppressWarnings("unused")
     public void convertCSVToParquet(SQLContext sqlContext, String filePath) {
         Dataset<Row> dataSetCSV = sqlContext.read()
                 .option("header", true)
@@ -49,6 +50,7 @@ public class FileHelper implements Serializable{
         dataSetCSV.write().mode(SaveMode.Overwrite).parquet(filePath);
     }
 
+    @SuppressWarnings("unused")
     public Dataset<Row> readParquet(SQLContext sqlContext, String filePath) {
         return sqlContext.read()
                 .option("header", true)
@@ -57,6 +59,7 @@ public class FileHelper implements Serializable{
                 .parquet(filePath);
     }
 
+    @SuppressWarnings("unused")
     private void convertCSVToParquet(SQLContext sqlContext, String csvPath, String parquetPath) {
         Dataset<Row> dataSetCSV = sqlContext.read()
                 .option("header", true)

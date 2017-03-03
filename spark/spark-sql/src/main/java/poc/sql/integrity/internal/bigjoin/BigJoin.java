@@ -16,9 +16,9 @@ import java.io.Serializable;
  */
 public class BigJoin implements Serializable {
 
-    Prop prop = new Properties_1();
-    DatasetHelper datasetHelper = new DatasetHelper();
-    FileHelper fileHelper = new FileHelper();
+    private Prop prop = new Properties_1();
+    private DatasetHelper datasetHelper = new DatasetHelper();
+    private FileHelper fileHelper = new FileHelper();
 
     public SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
@@ -30,7 +30,7 @@ public class BigJoin implements Serializable {
     private void run(SparkSession sc) {
         SQLContext sqlContext = new SQLContext(sc);
 
-        System.out.println("####### Read datasource from CSV file");
+        System.out.println("####### Read dataSource from CSV file");
         Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
         //System.out.println("#OfRow in the Full Dataset " + fullDataset.count());
         //fullDataset.printSchema();
@@ -64,8 +64,7 @@ public class BigJoin implements Serializable {
         Column joinedColumn = fullDataset.col(prop.getId()).equalTo(idsDataset.col(prop.getId()));
         //fullDataset = fullDataset.repartition(8);
         //idsDataset = idsDataset.repartition(8);
-        Dataset<Row> joined = idsDataset.join(fullDataset, joinedColumn).drop(idsDataset.col(prop.getId()));
-        return joined;
+        return idsDataset.join(fullDataset, joinedColumn).drop(idsDataset.col(prop.getId()));
     }
 
     public static void main(String[] args) {

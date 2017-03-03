@@ -27,12 +27,10 @@ public class BitwiseHelper implements Serializable{
         int bitLocation = columnLocationMap.get(prop.getTestedColumn()).bitLocation;
         long bitLocationLong = 1L << bitLocation;
 
-        Dataset<Row> idsDataSet = integrityBitwiseDS.filter((FilterFunction<Row>) record -> {
+        return integrityBitwiseDS.filter((FilterFunction<Row>) record -> {
             long recordLong = record.getAs(bitColumnId);
             return (recordLong & bitLocationLong) != 0;
         }).sort(new Column(prop.getId()));
-
-        return idsDataSet;
     }
 
     public Dataset<Row> joinIdsWithFullData(Dataset<Row> fullData, Dataset<Row> idsDS, Map<String, ColumnLocation> columnLocationMap) {
@@ -40,16 +38,15 @@ public class BitwiseHelper implements Serializable{
 
         //Dataset<Row> join = csBytesDataSet.join(dataSetParquet, "Id");
         Column joinedColumn = idsDS.col(prop.getId()).equalTo(fullData.col(prop.getId()));
-        Dataset<Row> joined = idsDS.join(fullData, joinedColumn, "left_outer")
+
+        return idsDS.join(fullData, joinedColumn, "left_outer")
                 .drop(idsDS.col(prop.getId()))
                 .drop(idsDS.col(bitColumnId));
-
-        return joined;
     }
 
     public void printOnlyRowWithValue(Dataset<Row> integrityBitwiseDS) {
         JavaRDD<Row> dataSetRDD = integrityBitwiseDS.toJavaRDD();
-        JavaRDD<Row> filter = dataSetRDD.filter(record -> new Boolean(record.getLong(1) != 0L));
+        JavaRDD<Row> filter = dataSetRDD.filter(record -> (record.getLong(1) != 0L));
         filter.take(20).forEach(System.out::println);
     }
 

@@ -32,6 +32,7 @@ public class FileGenerator implements Serializable {
         Dataset<Row> datasetWithId = addIdsToCSV(fullDataset, prop.getDataSourceIdPath());
 
         System.out.println("write ids to CSV file");
+        @SuppressWarnings("unused")
         Dataset<Row> idsOnly20PrecentDataset = writeIntegrityIdsToCSV(datasetWithId, prop.getIdsOnlyPath());
     }
 

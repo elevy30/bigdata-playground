@@ -41,11 +41,12 @@ public class BigJoinPageBeforeJoin implements Serializable {
         System.out.println("####### Filter 20 precent of lines");
         Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(dataSource, prop.getId());
         Dataset<Row> idsSorted = idsOnly20PrecentDataset.sort(col(prop.getId()));
+        @SuppressWarnings("unused")
         long numOfIntegrity = idsSorted.count();
         //System.out.println("#OfRow in the Filtered Dataset " + idsOnly20PrecentDataset.count());
         //idsOnly20PrecentDataset.show();
 
-        boolean hasNextPage = false;
+        boolean hasNextPage;
         Long startFrom = 0L;
         int pageNumber = 0;
         int pageSize = 100;
@@ -55,6 +56,7 @@ public class BigJoinPageBeforeJoin implements Serializable {
             System.out.println("Collect Ids For page " + (pageNumber + 1) + " start form id " + startFrom);
             Dataset<Row> pageIdsDS = datasetHelper.collectIdsForSpecificPage(idsSorted, startFrom, pageSize, prop.getId(), streamFilter);
 
+            @SuppressWarnings("unused")
             Dataset<Row> joined = join(dataSource, pageIdsDS);
             hasNextPage = false;
 

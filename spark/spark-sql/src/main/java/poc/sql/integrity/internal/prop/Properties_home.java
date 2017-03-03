@@ -14,7 +14,7 @@ public class Properties_home extends Prop{
 
     public String id = "Id";
     public String testedColumn = "sc_status";
-    public String dataSourceIdPath        = rootPath + "/proxy_fixed_bit.csv";
+    public String dataSourceIdPath      = rootPath + "/proxy_fixed_bit.csv";
     public String bitwisePath           = rootPath + "/proxy_fixed_Bitwise.csv";
     public String columnLocationMapPath = rootPath + "/columnLocationMap.csv";
     public String dataSourceParquet     = rootPath + "/proxy_fixed";
