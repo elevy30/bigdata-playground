@@ -1,5 +1,3 @@
-class
-*.log
 
 # Intellij
 .idea/
@@ -18,7 +16,6 @@ rebel.xml
 log/
 logs/
 target/
-pom.properties
 
 # sbt specific
 .cache
@@ -30,7 +27,6 @@ dist/*
 .scala_dependencies
 .worksheet
 out/
-
 
 # Binary junk and test data that shouldn't reside in git
 *.jar

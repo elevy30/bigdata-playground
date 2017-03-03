@@ -40,7 +40,7 @@ public class BitwiseGenerator implements Serializable{
     public void generateDummyIntegrityBitwise() {
         SQLContext sqlContext = new SQLContext(sparkSession);
 
-        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
 
         System.out.println("Generate ColumnLocationMapping");
         Map<String, ColumnLocation> columnLocationMapWrite = buildColumnLocationMapping(dataSource);
@@ -58,6 +58,7 @@ public class BitwiseGenerator implements Serializable{
         fileHelper.writeCSV(integrityBitwiseDS, prop.getBitwisePath());
     }
 
+    @SuppressWarnings("unused")
     private void validateColumnLocation(Map<String, ColumnLocation> columnLocationMapWrite) {
         Map<String, ColumnLocation> columnLocationMapRead = readColumnLocationFromFile();
 
@@ -81,9 +82,10 @@ public class BitwiseGenerator implements Serializable{
         SparkContext sparkContext = sparkSession.sparkContext();
         Map<String, ColumnLocation> columnLocationMapRead = new HashMap<>();
         Tuple2<String, ColumnLocation> tuple2 = new Tuple2<>(null, null);
-//        Decorators.AsScala<scala.collection.mutable.Map<String, ColumnLocation>> mapAsScala = JavaConverters.mapAsScalaMapConverter(columnLocationMapRead);
+        // Decorators.AsScala<scala.collection.mutable.Map<String, ColumnLocation>> mapAsScala = JavaConverters.mapAsScalaMapConverter(columnLocationMapRead);
         ClassTag<Tuple2<String, ColumnLocation>> classTag = ClassTag$.MODULE$.apply(tuple2.getClass());
         RDD<Tuple2<String, ColumnLocation>> tuple2RDDRead = sparkContext.objectFile(prop.getColumnLocationMapPath(), 1, classTag);
+        @SuppressWarnings("RedundantCast")
         Tuple2<String, ColumnLocation>[] tuple2s = (Tuple2<String, ColumnLocation>[]) tuple2RDDRead.collect();
         for (Tuple2<String, ColumnLocation> tuple21 : tuple2s) {
             columnLocationMapRead.put(tuple21._1(), tuple21._2());
@@ -109,6 +111,7 @@ public class BitwiseGenerator implements Serializable{
 
     }
 
+    @SuppressWarnings("unchecked")
     private Dataset<Row> createIntegrityDataSet(Dataset<Row> dataSource) {
         Random r = new Random();
 
@@ -121,8 +124,7 @@ public class BitwiseGenerator implements Serializable{
             }
         });
 
-        integrityRowRDD = integrityRowRDD.filter(row -> Boolean.valueOf(row.getString(1).length() != 0));
-        //List<String> items = Arrays.asList(listString.split("\\s*,\\s*"));
+        integrityRowRDD = integrityRowRDD.filter(row -> (row.getString(1).length() != 0));
 
         // Generate the schema based on the string of schema
         List<StructField> fields = new ArrayList<>();
@@ -159,11 +161,10 @@ public class BitwiseGenerator implements Serializable{
                     }
                 }
             }
-            //If I casting to Object[] (like the warning asked) - Spark change the value type to BigInt
+            //TODO Warning - If I casting to Object[] (like the warning asked) - Spark change the value type to BigInt
+            //noinspection ConfusingArgumentToVarargsMethod
             return RowFactory.create(collectorArray);
         });
-
-        //List<String> items = Arrays.asList(listString.split("\\s*,\\s*"));
 
         // Generate the schema based on the string of schema
         List<StructField> fields = new ArrayList<>();

@@ -8,13 +8,15 @@ import lombok.Getter;
 @Getter
 public class Properties_2 extends Prop{
 
-    public String invalidList = "MismatchList";
+    private String rootPath = "file:///opt/Dropbox/dev/git-hub/poc/_resources/data/bitwise";
 
-    public String id = "Id";
-    public String testedColumn = "sc_status";
-    public String dataSourcePath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed_bit.csv";
-    public String bitwisePath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed_Bitwise.csv";
-    public String columnLocationMapPath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/columnLocationMap.csv";
-    public String dataSourceParquet = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed";
-    public String idsOnlyPath = "file:///opt/Dropbox/dev/poc/_resources/bigdata/ID.csv";
+    public String invalidList    = "MismatchList";
+    public String id             = "Id";
+    public String testedColumn   = "sc_status";
+
+    public String dataSourceIdPath      = rootPath + "/proxy_fixed_bit.csv";
+    public String bitwisePath           = rootPath + "/proxy_fixed_Bitwise.csv";
+    public String columnLocationMapPath = rootPath + "/columnLocationMap.csv";
+    public String dataSourceParquet     = rootPath + "/proxy_fixed";
+    public String idsOnlyPath           = rootPath + "/ID.csv";
 }

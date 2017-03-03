@@ -17,7 +17,7 @@
         <module>spark-common</module>
         <module>spark-rdd</module>
         <module>spark-mllib</module>
-        <module>spark-mllib-scala</module>
+        <!--<module>spark-mllib-scala</module>-->
         <module>spark-sql</module>
         <module>spark-streaming</module>
     </modules>

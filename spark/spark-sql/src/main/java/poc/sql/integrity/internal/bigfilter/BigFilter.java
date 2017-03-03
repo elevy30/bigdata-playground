@@ -66,11 +66,11 @@ public class BigFilter implements Serializable {
 
         SQLContext sqlContext = new SQLContext(sc);
 
-        System.out.println("Read datasource from CSV file");
-        Dataset<Row> datasource = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        System.out.println("Read dataSource from CSV file");
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
 
         System.out.println("Filter 20% of the data into new DF and get only the IDs");
-        Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(datasource, prop.getId());
+        Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(dataSource, prop.getId());
         idsOnly20PrecentDataset.sort(col(prop.getId())).show();
 
         System.out.println("convert Ids to Map");
@@ -91,7 +91,7 @@ public class BigFilter implements Serializable {
         System.out.println("Filter the source DF by the ids Map");
         streamFilter.start();
 //        Dataset<Row> joined = filterByMap(datasetWithId, idsMap).sort(TR_ID);
-        Dataset<Row> joined = filterByMap(datasource, idsMap);
+        Dataset<Row> joined = filterByMap(dataSource, idsMap);
         streamFilter.stop();
         System.out.println("Filter Duration " + streamFilter.getDuration());
 
@@ -104,6 +104,7 @@ public class BigFilter implements Serializable {
     }
 
     private Map<Long, Boolean> collectAsMap(Dataset<Row> rowDataset) {
+        //noinspection Convert2Diamond
         JavaPairRDD<Long, Boolean> idsMapJavaPairRDD = rowDataset.select(prop.getId()).toJavaRDD().mapToPair(row -> new Tuple2<Long, Boolean>(row.getLong(0), true));
         return idsMapJavaPairRDD.collectAsMap();
     }
@@ -125,6 +126,7 @@ public class BigFilter implements Serializable {
         });
     }
 
+    @SuppressWarnings("SameParameterValue")
     private Dataset<Row> filterPage(Dataset<Row> df, int skip, int limit, boolean isFiltered, boolean alreadySorted) {
 
         Dataset<Row> skipped = df.filter(col(prop.getId()).geq(skip));

@@ -12,7 +12,6 @@ import poc.sql.integrity.internal.helper.BitwiseHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
 import poc.sql.integrity.internal.helper.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
-import poc.sql.integrity.internal.prop.Properties_1;
 import poc.sql.integrity.internal.prop.Properties_2;
 
 import java.io.Serializable;
@@ -48,8 +47,8 @@ public class SparkIntegrityBitwiseUsingJoin implements Serializable {
 
     private void run() {
 
-        System.out.println("########### read datasource from parquet");
-        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        System.out.println("########### read dataSource from parquet");
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
         dataSource.show();
 
         System.out.println("########### build ColumnLocationMapping");

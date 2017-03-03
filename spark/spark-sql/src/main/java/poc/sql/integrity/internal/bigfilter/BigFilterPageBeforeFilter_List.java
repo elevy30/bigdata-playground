@@ -30,10 +30,10 @@ import static org.apache.spark.sql.functions.col;
  */
 public class BigFilterPageBeforeFilter_List implements Serializable {
 
-    Prop prop = new Properties_1();
-    Stream streamFilter = new Stream();
-    FileHelper fileHelper = new FileHelper();
-    DatasetHelper datasetHelper = new DatasetHelper();
+    private Prop prop = new Properties_1();
+    private Stream streamFilter = new Stream();
+    private FileHelper fileHelper = new FileHelper();
+    private DatasetHelper datasetHelper = new DatasetHelper();
 
     public SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
@@ -47,10 +47,10 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
         SQLContext sqlContext = new SQLContext(sc);
 
         System.out.println("Read src data-frame from CSV file");
-        Dataset<Row> datasource = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
 
         System.out.println("Filter 20% of the data into new DF and get only the IDs");
-        Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(datasource, prop.getId());
+        Dataset<Row> idsOnly20PrecentDataset = datasetHelper.filter20Precent(dataSource, prop.getId());
 
 //        System.out.println("# Of Lines in source file " + fullDataset.count());
 //        System.out.println("# Of Lines in ids file " + idsOnly20PrecentDataset.count());
@@ -59,7 +59,7 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
 //        idsSorted = idsSorted.cache();
 
 
-        boolean hasNextPage = false;
+        boolean hasNextPage;
         Long startFrom = 0L;
         int pageNumber = 0;
         int pageSize = 100;
@@ -77,7 +77,8 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
                 startFrom = pageIdsList.stream().max(Long::compareTo).orElse(-1L);
 
                 System.out.println("Filter the source DF by the ids Map");
-                Dataset<Row> page = filterByList(datasource, pageIdsList);
+                Dataset<Row> page = filterByList(dataSource, pageIdsList);
+                page.show();
 //                statistics(startFrom, pageNumber, pageIdsDS, pageIdsMap, page);
 
                 startFrom++;
@@ -123,6 +124,7 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
         return filtered;
     }
 
+    @SuppressWarnings("unused")
     private void statistics(Long startFrom, int pageNumber, Dataset<Row> pageIdsDS, Map<Long, Boolean> pageIdsMap, Dataset<Row> page) {
         System.out.println("----- STATISTICS -----");
         System.out.println("Max id in page " + (pageNumber + 1) + " is " + startFrom);

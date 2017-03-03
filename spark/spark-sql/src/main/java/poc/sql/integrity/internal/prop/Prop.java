@@ -13,7 +13,8 @@ public abstract class Prop implements Serializable{
 
      String id = "Id";
      String testedColumn = "cs_username";
-     String dataSourcePath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed.csv";
+     String csvPath               = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed.csv";
+     String dataSourceIdPath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed.csv";
      String bitwisePath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed_Bitwise.csv";
      String columnLocationMapPath = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/columnLocationMap.csv";
      String dataSourceParquet = "file:///opt/Dropbox/dev/poc/_resources/data_bitwise/proxy_fixed";

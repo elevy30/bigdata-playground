@@ -6,7 +6,6 @@ import org.apache.spark.sql.SQLContext;
 import poc.sql.integrity.internal.helper.DatasetHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
 import poc.sql.integrity.internal.prop.Prop;
-import poc.sql.integrity.internal.prop.Properties_1;
 
 import java.io.Serializable;
 
@@ -17,11 +16,11 @@ import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
  */
 public class FileGenerator implements Serializable {
 
-    private Properties_1 prop;
+    private Prop prop;
     private FileHelper fileHelper = new FileHelper();
     private DatasetHelper datasetHelper = new DatasetHelper();
 
-    public FileGenerator(Properties_1 prop) {
+    public FileGenerator(Prop prop) {
         this.prop = prop;
     }
 
@@ -30,7 +29,7 @@ public class FileGenerator implements Serializable {
         Dataset<Row> fullDataset = fileHelper.readCSV(sqlContext, prop.getCsvPath());
 
         System.out.println("Add IDs to data-frame and create new CSV file");
-        Dataset<Row> datasetWithId = addIdsToCSV(fullDataset, prop.getDataSourcePath());
+        Dataset<Row> datasetWithId = addIdsToCSV(fullDataset, prop.getDataSourceIdPath());
 
         System.out.println("write ids to CSV file");
         Dataset<Row> idsOnly20PrecentDataset = writeIntegrityIdsToCSV(datasetWithId, prop.getIdsOnlyPath());

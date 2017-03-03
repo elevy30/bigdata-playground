@@ -1,7 +1,5 @@
 package poc.sql.integrity.internal.bigfilter;
 
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
@@ -13,7 +11,6 @@ import poc.sql.integrity.internal.helper.FileHelper;
 import poc.sql.integrity.internal.helper.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
-import scala.Tuple2;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -47,13 +44,13 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
     private void run(SparkSession sc) {
         SQLContext sqlContext = new SQLContext(sc);
 
-        //FileGenerator fileGenerator = new FileGenerator();
-        //fileGenerator.generateFilesWithIDS(sqlContext);
+        FileGenerator fileGenerator = new FileGenerator(prop);
+        fileGenerator.generateFilesWithIDS(sqlContext);
 
         System.out.println("Read src file");
         streamFilter.reset();
         streamFilter.start();
-        Dataset<Row> datasetWithId = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        Dataset<Row> datasetWithId = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
 //        System.out.println("# Of Lines in source file " + datasetWithId.count());
         streamFilter.stop();
         System.err.println("\n\nTime take to read src: " + streamFilter.getDuration() + "\n\n");

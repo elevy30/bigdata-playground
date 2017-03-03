@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
+/***
  * Created by eyallevy on 08/01/17.
- */
+ **/
 public class SparkIntegrityBitwiseUsingFilter implements Serializable {
 
     private Prop prop = new Properties_1();
@@ -45,7 +45,7 @@ public class SparkIntegrityBitwiseUsingFilter implements Serializable {
         Stream stream = new Stream();
         stream.start();
         System.out.println("########### Read datasource csv file");
-        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
         stream.stop();
         System.err.println(stream.getDuration());//32110
 
@@ -81,8 +81,7 @@ public class SparkIntegrityBitwiseUsingFilter implements Serializable {
             StructField bitColumnField = DataTypes.createStructField(String.valueOf(i), DataTypes.LongType, false);
             fields.add(bitColumnField);
         }
-        StructType schema = DataTypes.createStructType(fields);
-        return schema;
+        return DataTypes.createStructType(fields);
     }
 
     private int getMaxColumnId(Map<String, ColumnLocation> columnLocationMap) {

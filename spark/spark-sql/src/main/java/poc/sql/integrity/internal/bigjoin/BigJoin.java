@@ -10,8 +10,6 @@ import poc.sql.integrity.internal.prop.Properties_1;
 
 import java.io.Serializable;
 
-import static org.apache.spark.sql.functions.monotonicallyIncreasingId;
-
 
 /**
  * Created by eyallevy on 08/01/17.
@@ -33,7 +31,7 @@ public class BigJoin implements Serializable {
         SQLContext sqlContext = new SQLContext(sc);
 
         System.out.println("####### Read datasource from CSV file");
-        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourcePath());
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
         //System.out.println("#OfRow in the Full Dataset " + fullDataset.count());
         //fullDataset.printSchema();
 
