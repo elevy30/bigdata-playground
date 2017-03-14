@@ -1,10 +1,10 @@
 package poc.sql.integrity.internal.bigjoin;
 
 import org.apache.spark.sql.*;
-import poc.commons.time.Stream;
+import poc.commons.time.StreamTimer;
 import poc.sql.integrity.internal.helper.DatasetHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
 
@@ -20,13 +20,6 @@ public class BigJoin implements Serializable {
     private DatasetHelper datasetHelper = new DatasetHelper();
     private FileHelper fileHelper = new FileHelper();
 
-    public SparkSession init() {
-        System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
-        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-
-        return sparkSessionInitializer.getSparkSession();
-    }
-
     private void run(SparkSession sc) {
         SQLContext sqlContext = new SQLContext(sc);
 
@@ -41,21 +34,21 @@ public class BigJoin implements Serializable {
         //idsOnly20PrecentDataset.show();
 
         System.out.println("####### Join 2 dataset");
-        Stream streamJoin = new Stream();
-        streamJoin.start();
+        StreamTimer streamTimerJoin = new StreamTimer();
+        streamTimerJoin.start();
         Dataset<Row> joined = join(dataSource, idsOnly20PrecentDataset);
         //System.out.println("#OfRow in the Joined Dataset " + joined.count());
         //joined.show();
-        streamJoin.stop();
-        System.out.println("JOIN Duration" + streamJoin.getDuration());
+        streamTimerJoin.stop();
+        System.out.println("JOIN Duration" + streamTimerJoin.getDuration());
 
         System.out.println("####### Paging");
-        Stream streamFilter = new Stream();
-        streamFilter.start();
+        StreamTimer streamTimerFilter = new StreamTimer();
+        streamTimerFilter.start();
         Dataset<Row> page = datasetHelper.readPage(joined, 1000, 1000, true, false, prop.getId());
         page.show();
-        streamFilter.stop();
-        System.out.println("Filter Duration" + streamFilter.getDuration());
+        streamTimerFilter.stop();
+        System.out.println("Filter Duration" + streamTimerFilter.getDuration());
         //Filter Duration 98432
     }
 
@@ -68,8 +61,10 @@ public class BigJoin implements Serializable {
     }
 
     public static void main(String[] args) {
+        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
+        SparkSession sparkSession = sparkSessionInitializer.init();
+
         BigJoin app = new BigJoin();
-        SparkSession sparkSession = app.init();
         app.run(sparkSession);
     }
 }

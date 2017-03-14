@@ -2,7 +2,7 @@ package poc.sql.integrity.bitwise.best;
 
 import org.apache.spark.sql.SparkSession;
 import poc.sql.integrity.internal.generator.BitwiseGenerator;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
 

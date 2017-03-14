@@ -1,5 +1,7 @@
 package poc.sql.integrity.internal.helper;
 
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
@@ -12,6 +14,11 @@ import java.io.Serializable;
  * Created by eyallevy on 27/02/17.
  */
 public class FileHelper implements Serializable{
+
+
+    public JavaRDD<String> readFile(JavaSparkContext sparkContext, String filePath) {
+        return sparkContext.textFile(filePath);
+    }
 
     public Dataset<Row> readCSV(SQLContext sqlContext, String csvPath) {
         return sqlContext.read()

@@ -7,7 +7,7 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 
 import java.io.Serializable;
 import java.util.ArrayList;

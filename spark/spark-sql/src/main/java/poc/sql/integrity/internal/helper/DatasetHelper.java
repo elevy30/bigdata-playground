@@ -2,9 +2,10 @@ package poc.sql.integrity.internal.helper;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.FilterFunction;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import poc.commons.time.Stream;
+import poc.commons.time.StreamTimer;
 import scala.Serializable;
 import scala.Tuple2;
 
@@ -18,29 +19,36 @@ import static org.apache.spark.sql.functions.col;
  */
 public class DatasetHelper implements Serializable {
 
-    public Dataset<Row> collectIdsForSpecificPage(Dataset<Row> idsSorted, long startFrom, int pageSize, String columnName, Stream stream) {
-        stream.start();
+    public Dataset<Row> collectIdsForSpecificPage(Dataset<Row> idsSorted, long startFrom, int pageSize, String columnName, StreamTimer streamTimer) {
+        streamTimer.start();
 
         Dataset<Row> page = idsSorted.filter(col(columnName).geq(startFrom)).limit(pageSize);
 
-        stream.stop();
-        stream.updateTotal();
-        System.err.println("CollectIdsForSpecificPage Duration: " + stream.getDuration());
+        streamTimer.stop();
+        streamTimer.updateTotal();
+        System.err.println("CollectIdsForSpecificPage Duration: " + streamTimer.getDuration());
 
         return page;
     }
 
-    public Map<Long, Boolean> collectAsMap(Dataset<Row> rowDataset, String columnName, Stream stream) {
-        stream.start();
 
-        JavaPairRDD<Long, Boolean> idsMapJavaPairRDD = rowDataset.select(columnName).toJavaRDD().mapToPair(row -> new Tuple2<>(row.getLong(0), true));
-        Map<Long, Boolean> idsMap = idsMapJavaPairRDD.collectAsMap();
+    public JavaPairRDD<Long, Boolean> convertToPairRDD(Dataset<Row> rowDataset, String columnName) {
+        return rowDataset.select(columnName)
+                .toJavaRDD()
+                .mapToPair((PairFunction<Row, Long, Boolean>) row -> new Tuple2<Long, Boolean>(row.getLong(0), true));
+    }
 
-        stream.stop();
-        stream.updateTotal();
-        System.err.println("collectAsMap Duration: " + stream.getDuration());
+    public Map<Long, Boolean> collectAsMap(Dataset<Row> rowDataset, String columnName, StreamTimer streamTimer) {
+        streamTimer.start();
 
-        return idsMap;
+        JavaPairRDD<Long, Boolean> mapJavaPairRDD = convertToPairRDD(rowDataset, columnName);
+        Map<Long, Boolean> map = mapJavaPairRDD.collectAsMap();
+
+        streamTimer.stop();
+        streamTimer.updateTotal();
+        System.err.println("collectAsMap Duration: " + streamTimer.getDuration());
+
+        return map;
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -62,18 +70,15 @@ public class DatasetHelper implements Serializable {
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
-    public Dataset<Row> filter(Dataset<Row> fullDataset, Map<Long, Boolean> idsMap, String columnName, Stream stream) {
-        stream.start();
+    public Dataset<Row> filter(Dataset<Row> fullDataset, Map<Long, Boolean> idsMap, String columnName, StreamTimer streamTimer) {
+        streamTimer.start();
 
-        Dataset<Row> filtered = fullDataset.filter((FilterFunction<Row>) row -> {
-            Boolean aBoolean = idsMap.get(row.getAs(columnName));
-            return aBoolean != null;
-        });
+        Dataset<Row> filtered = fullDataset.filter((FilterFunction<Row>) row -> idsMap.get(row.getAs(columnName)) != null);
         filtered.show();
 
-        stream.stop();
-        stream.updateTotal();
-        System.err.println("Filter Duration: " + stream.getDuration());
+        streamTimer.stop();
+        streamTimer.updateTotal();
+        System.err.println("Filter Duration: " + streamTimer.getDuration());
 
         return filtered;
     }

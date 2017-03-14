@@ -7,13 +7,13 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import poc.commons.time.Stream;
+import poc.commons.time.StreamTimer;
 import poc.sql.integrity.bitwise.ColumnLocation;
 import poc.sql.integrity.internal.bigfilter.BigFilterPageBeforeFilter_Map;
 import poc.sql.integrity.internal.generator.BitwiseGenerator;
 import poc.sql.integrity.internal.helper.BitwiseHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
 
@@ -42,31 +42,31 @@ public class SparkIntegrityBitwiseUsingFilter implements Serializable {
         BitwiseHelper bitwiseHelper = new BitwiseHelper(prop);
         FileHelper fileHelper = new FileHelper();
 
-        Stream stream = new Stream();
-        stream.start();
+        StreamTimer streamTimer = new StreamTimer();
+        streamTimer.start();
         System.out.println("########### Read dataSource csv file");
         Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
-        stream.stop();
-        System.err.println(stream.getDuration());//32110
+        streamTimer.stop();
+        System.err.println(streamTimer.getDuration());//32110
 
-        stream.start();
+        streamTimer.start();
         System.out.println("########### Read columnLocationMap object file");
         Map<String, ColumnLocation> columnLocationMap = fileBitwiseGenerator.readColumnLocationFromFile();
         StructType schema = createSchema(columnLocationMap);
-        stream.stop();
-        System.err.println(stream.getDuration());//106
+        streamTimer.stop();
+        System.err.println(streamTimer.getDuration());//106
 
-        stream.start();
+        streamTimer.start();
         System.out.println("########### Read integrity bitwise file");
         Dataset<Row> integrityBitwiseDS = fileHelper.readCSV(sqlContext,  prop.getBitwisePath(), schema);
-        stream.stop();
-        System.err.println(stream.getDuration());//15
+        streamTimer.stop();
+        System.err.println(streamTimer.getDuration());//15
 
-        stream.start();
+        streamTimer.start();
         Dataset<Row> idsDS = bitwiseHelper.getAllIntegrityIdsForSpecificColumn(integrityBitwiseDS, columnLocationMap);
         //idsDS.show();
-        stream.stop();
-        System.err.println(stream.getDuration());//40
+        streamTimer.stop();
+        System.err.println(streamTimer.getDuration());//40
 
         bigFilter.bigFilter(dataSource, idsDS);//2936 per page
 

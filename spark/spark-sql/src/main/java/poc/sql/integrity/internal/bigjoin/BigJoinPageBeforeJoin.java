@@ -1,10 +1,10 @@
 package poc.sql.integrity.internal.bigjoin;
 
 import org.apache.spark.sql.*;
-import poc.commons.time.Stream;
+import poc.commons.time.StreamTimer;
 import poc.sql.integrity.internal.helper.DatasetHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
 
@@ -19,16 +19,9 @@ import static org.apache.spark.sql.functions.col;
 public class BigJoinPageBeforeJoin implements Serializable {
 
     private Prop prop = new Properties_1();
-    private Stream streamFilter = new Stream();
+    private StreamTimer streamTimerFilter = new StreamTimer();
     private DatasetHelper datasetHelper = new DatasetHelper();
     private FileHelper fileHelper = new FileHelper();
-
-    public SparkSession init() {
-        System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
-        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-
-        return sparkSessionInitializer.getSparkSession();
-    }
 
     private void run(SparkSession sc) {
         SQLContext sqlContext = new SQLContext(sc);
@@ -51,10 +44,10 @@ public class BigJoinPageBeforeJoin implements Serializable {
         int pageNumber = 0;
         int pageSize = 100;
         do {
-            streamFilter.reset();
+            streamTimerFilter.reset();
 
             System.out.println("Collect Ids For page " + (pageNumber + 1) + " start form id " + startFrom);
-            Dataset<Row> pageIdsDS = datasetHelper.collectIdsForSpecificPage(idsSorted, startFrom, pageSize, prop.getId(), streamFilter);
+            Dataset<Row> pageIdsDS = datasetHelper.collectIdsForSpecificPage(idsSorted, startFrom, pageSize, prop.getId(), streamTimerFilter);
 
             @SuppressWarnings("unused")
             Dataset<Row> joined = join(dataSource, pageIdsDS);
@@ -76,30 +69,33 @@ public class BigJoinPageBeforeJoin implements Serializable {
 //                hasNextPage = false;
 //            }
 
-            System.err.println("\n\nTotal Duration: " + streamFilter.totalDuration + "\n\n");
+            System.err.println("\n\nTotal Duration: " + streamTimerFilter.totalDuration + "\n\n");
         }
         while (hasNextPage);
     }
 
 
     private Dataset<Row> join(Dataset<Row> fullDataset, Dataset<Row> idsDataset) {
-        streamFilter.start();
+        streamTimerFilter.start();
 
         Column joinedColumn = fullDataset.col(prop.getId()).equalTo(idsDataset.col(prop.getId()));
         Dataset<Row> joined = idsDataset.join(fullDataset, joinedColumn).drop(idsDataset.col(prop.getId()));
         joined.show();
 
-        streamFilter.stop();
-        streamFilter.updateTotal();
-        System.err.println("Join Duration: " + streamFilter.getDuration());
+        streamTimerFilter.stop();
+        streamTimerFilter.updateTotal();
+        System.err.println("Join Duration: " + streamTimerFilter.getDuration());
 
         return joined;
     }
 
     public static void main(String[] args) {
+        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
+        SparkSession sparkSession = sparkSessionInitializer.init();
+
         BigJoinPageBeforeJoin app = new BigJoinPageBeforeJoin();
-        SparkSession sparkSession = app.init();
         app.run(sparkSession);
     }
+
 }
 

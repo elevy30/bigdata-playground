@@ -73,8 +73,8 @@ public class BitwiseGenerator implements Serializable{
         Decorators.AsScala<scala.collection.mutable.Map<String, ColumnLocation>> mapAsScala = JavaConverters.mapAsScalaMapConverter(columnLocationMap);
         scala.collection.Seq<Tuple2<String, ColumnLocation>> tuple2Seq = mapAsScala.asScala().toSeq();
         Tuple2<String, ColumnLocation> tuple2 = new Tuple2<>(null, null);
-        ClassTag<Tuple2<String, ColumnLocation>> classTag = ClassTag$.MODULE$.apply(tuple2.getClass());
-        RDD<Tuple2<String, ColumnLocation>> tuple2RDDWrite = sparkContext.parallelize(tuple2Seq, 1, classTag);
+        ClassTag<Tuple2<String, ColumnLocation>> classTag =  ClassTag$.MODULE$.apply(tuple2.getClass());
+        RDD<Tuple2<String, ColumnLocation>> tuple2RDDWrite = sparkContext.parallelize(tuple2Seq,1,classTag);
         tuple2RDDWrite.saveAsObjectFile(prop.getColumnLocationMapPath());
     }
 

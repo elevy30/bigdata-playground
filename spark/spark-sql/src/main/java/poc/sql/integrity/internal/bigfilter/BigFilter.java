@@ -2,14 +2,15 @@ package poc.sql.integrity.internal.bigfilter;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.FilterFunction;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
-import poc.commons.time.Stream;
+import poc.commons.time.StreamTimer;
 import poc.sql.integrity.internal.helper.DatasetHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
 import scala.Tuple2;
@@ -54,15 +55,8 @@ public class BigFilter implements Serializable {
     private FileHelper fileHelper = new FileHelper();
     private DatasetHelper datasetHelper = new DatasetHelper();
 
-    public SparkSession init() {
-        System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
-        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-
-        return sparkSessionInitializer.getSparkSession();
-    }
-
     private void run(SparkSession sc) {
-        Stream streamFilter = new Stream();
+        StreamTimer streamTimerFilter = new StreamTimer();
 
         SQLContext sqlContext = new SQLContext(sc);
 
@@ -74,39 +68,30 @@ public class BigFilter implements Serializable {
         idsOnly20PrecentDataset.sort(col(prop.getId())).show();
 
         System.out.println("convert Ids to Map");
-        streamFilter.start();
-        Map<Long, Boolean> idsMap = collectAsMap(idsOnly20PrecentDataset);
-        streamFilter.stop();
-        System.out.println("ToMap Duration " + streamFilter.getDuration());
+        Map<Long, Boolean> idsMap = datasetHelper.collectAsMap(idsOnly20PrecentDataset, prop.getId(), streamTimerFilter);
 
         System.out.println("convert Ids to Map");
-        streamFilter.start();
+        streamTimerFilter.start();
         Map<Long, Boolean> idsMapWithJava = convertToMap(idsOnly20PrecentDataset);
-        streamFilter.stop();
-        System.out.println("ToMapJava Duration " + streamFilter.getDuration());
+        streamTimerFilter.stop();
+        System.out.println("ToMapJava Duration " + streamTimerFilter.getDuration());
 
         boolean equals = idsMap.equals(idsMapWithJava);
         System.out.println("The map are " + (equals ? "EQUALS" : "NOT EQUALS"));
 
         System.out.println("Filter the source DF by the ids Map");
-        streamFilter.start();
+        streamTimerFilter.start();
 //        Dataset<Row> joined = filterByMap(datasetWithId, idsMap).sort(TR_ID);
         Dataset<Row> joined = filterByMap(dataSource, idsMap);
-        streamFilter.stop();
-        System.out.println("Filter Duration " + streamFilter.getDuration());
+        streamTimerFilter.stop();
+        System.out.println("Filter Duration " + streamTimerFilter.getDuration());
 
         System.out.println("Paging - take 1000 starting from 1000");
-        streamFilter.start();
+        streamTimerFilter.start();
         Dataset<Row> page = filterPage(joined, 1000, 1000, true, true);
         page.show();
-        streamFilter.stop();
-        System.out.println("Paging Duration " + streamFilter.getDuration());
-    }
-
-    private Map<Long, Boolean> collectAsMap(Dataset<Row> rowDataset) {
-        //noinspection Convert2Diamond
-        JavaPairRDD<Long, Boolean> idsMapJavaPairRDD = rowDataset.select(prop.getId()).toJavaRDD().mapToPair(row -> new Tuple2<Long, Boolean>(row.getLong(0), true));
-        return idsMapJavaPairRDD.collectAsMap();
+        streamTimerFilter.stop();
+        System.out.println("Paging Duration " + streamTimerFilter.getDuration());
     }
 
     private Map<Long, Boolean> convertToMap(Dataset<Row> rowDataset) {
@@ -140,9 +125,12 @@ public class BigFilter implements Serializable {
         return limited;
     }
 
+
     public static void main(String[] args) {
+        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
+        SparkSession sparkSession = sparkSessionInitializer.init();
+
         BigFilter app = new BigFilter();
-        SparkSession sparkSession = app.init();
         app.run(sparkSession);
     }
 }

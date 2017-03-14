@@ -15,7 +15,7 @@
 
     <modules>
         <module>prod-cons</module>
-        <module>wiki-stream</module>
+        <module>wiki-streamTimer</module>
     </modules>
 
     <build>

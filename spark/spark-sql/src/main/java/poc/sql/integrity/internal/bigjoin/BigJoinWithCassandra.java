@@ -2,8 +2,10 @@ package poc.sql.integrity.internal.bigjoin;
 
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.*;
-import poc.commons.time.Stream;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.time.StreamTimer;
+import poc.commons.SparkSessionInitializer;
+import poc.sql.integrity.internal.helper.DatasetHelper;
+import poc.sql.integrity.internal.helper.FileHelper;
 
 import java.io.Serializable;
 import java.util.Random;
@@ -21,20 +23,14 @@ public class BigJoinWithCassandra implements Serializable {
     //    private static final String CSV_PATH = "file:///Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/bigdata/QR_500K.csv";
 //    private static final String PARQUET_PATH = "file:///Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/bigdata/QR_500K";
     private static final String CSV_PATH = "file:///opt/Dropbox/dev/poc/_resources/bigdata/QR_500K.csv";
-    private static final String PARQUET_PATH = "file:///opt/Dropbox/dev/poc/_resources/bigdata/QR_500Q_ID";
-
-    public SparkSession init() {
-        System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
-        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-
-        return sparkSessionInitializer.getSparkSession();
-    }
 
     private void run(SparkSession sc) {
         SQLContext sqlContext = new SQLContext(sc);
+        FileHelper fileHelper = new FileHelper();
+        DatasetHelper datasetHelper = new DatasetHelper();
 
         System.out.println("Read src data-frame from CSV file");
-        Dataset<Row> fullDataset = readCSV(sqlContext);
+        Dataset<Row> fullDataset = fileHelper.readCSV(sqlContext, CSV_PATH);
 
         System.out.println("Add IDs to data-frame");
         Dataset<Row> datasetWithId = fullDataset.withColumn(TR_ID, monotonicallyIncreasingId());
@@ -50,16 +46,13 @@ public class BigJoinWithCassandra implements Serializable {
         Dataset<Row> joined = join(datasetWithId, idsOnly20PrecentDataset);
 
         //Paging
-        Stream streamFilter = new Stream();
-        streamFilter.start();
-        Dataset<Row> page = readPage(joined, 1000, 1000, true, false);
+        StreamTimer streamTimerFilter = new StreamTimer();
+        streamTimerFilter.start();
+        Dataset<Row> page = datasetHelper.readPage(joined, 1000, 1000, true, false, TR_ID);
         page.show();
-        streamFilter.stop();
-        System.out.println("Filter Duration" + streamFilter.getDuration());
-
-
+        streamTimerFilter.stop();
+        System.out.println("Filter Duration" + streamTimerFilter.getDuration());
     }
-
 
     private Dataset<Row> join(Dataset<Row> fullDataset, Dataset<Row> idsDataset) {
 //        Column joinedColumn = fullDataset.col(TR_ID).equalTo(idsDataset.col(TR_ID));
@@ -71,42 +64,11 @@ public class BigJoinWithCassandra implements Serializable {
         return rowDataset.filter((FilterFunction<Row>) row -> r.nextFloat() <= 0.20F).select(col(TR_ID));
     }
 
-
-    @SuppressWarnings("SameParameterValue")
-    private Dataset<Row> readPage(Dataset<Row> df, int skip, int limit, boolean isFiltered, boolean alreadySorted) {
-        Dataset<Row> skipped = df.filter(col(TR_ID).geq(skip));
-        if (!isFiltered) {
-            skipped = skipped.filter(col(TR_ID).lt(skip + limit));
-        }
-        Dataset<Row> limited = skipped.limit(limit);
-        if (!alreadySorted) {
-            limited = limited.sort(TR_ID);
-        }
-        return limited;
-    }
-
-
-    private Dataset<Row> readCSV(SQLContext sqlContext) {
-        return sqlContext.read()
-                .option("header", true)
-                .option("sep", ",")
-                .option("inferSchema", "true")
-                .csv(CSV_PATH);
-    }
-
-    @SuppressWarnings("unused")
-    private Dataset<Row> readParquet(SQLContext sqlContext) {
-        return sqlContext.read()
-                .option("header", true)
-                .option("sep", ",")
-                .option("inferSchema", "true")
-                .parquet(PARQUET_PATH);
-    }
-
-
     public static void main(String[] args) {
+        SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
+        SparkSession sparkSession = sparkSessionInitializer.init();
+
         BigJoinWithCassandra app = new BigJoinWithCassandra();
-        SparkSession sparkSession = app.init();
         app.run(sparkSession);
     }
 }

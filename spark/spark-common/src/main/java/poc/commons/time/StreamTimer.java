@@ -2,7 +2,7 @@ package poc.commons.time;
 
 import java.io.Serializable;
 
-public class Stream implements Serializable{
+public class StreamTimer implements Serializable{
     public long startTime;
     public long endTime;
 

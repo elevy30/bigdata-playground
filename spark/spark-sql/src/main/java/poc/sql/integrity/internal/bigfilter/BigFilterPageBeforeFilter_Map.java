@@ -4,11 +4,11 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
-import poc.commons.time.Stream;
+import poc.commons.time.StreamTimer;
 import poc.sql.integrity.internal.generator.FileGenerator;
 import poc.sql.integrity.internal.helper.DatasetHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_1;
 
@@ -26,7 +26,7 @@ import static org.apache.spark.sql.functions.col;
  */
 public class BigFilterPageBeforeFilter_Map implements Serializable {
     private Prop prop;
-    private Stream streamFilter = new Stream();
+    private StreamTimer streamTimerFilter = new StreamTimer();
     private FileHelper fileHelper = new FileHelper();
     private DatasetHelper datasetHelper = new DatasetHelper();
 
@@ -48,21 +48,21 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
         fileGenerator.generateFilesWithIDS(sqlContext);
 
         System.out.println("Read src file");
-        streamFilter.reset();
-        streamFilter.start();
+        streamTimerFilter.reset();
+        streamTimerFilter.start();
         Dataset<Row> datasetWithId = fileHelper.readCSV(sqlContext, prop.getDataSourceIdPath());
 //        System.out.println("# Of Lines in source file " + datasetWithId.count());
-        streamFilter.stop();
-        System.err.println("\n\nTime take to read src: " + streamFilter.getDuration() + "\n\n");
+        streamTimerFilter.stop();
+        System.err.println("\n\nTime take to read src: " + streamTimerFilter.getDuration() + "\n\n");
 
 
         System.out.println("Read ids file");
-        streamFilter.reset();
-        streamFilter.start();
+        streamTimerFilter.reset();
+        streamTimerFilter.start();
         Dataset<Row> idsOnly20PrecentDataset = fileHelper.readCSV(sqlContext, prop.getIdsOnlyPath());
 //        System.out.println("# Of Lines in ids file " + idsOnly20PrecentDataset.count());
-        streamFilter.stop();
-        System.err.println("\n\nTime take to read ids: " + streamFilter.getDuration() + "\n\n");
+        streamTimerFilter.stop();
+        System.err.println("\n\nTime take to read ids: " + streamTimerFilter.getDuration() + "\n\n");
 
         bigFilter(datasetWithId, idsOnly20PrecentDataset.sort(col(prop.getId())));
     }
@@ -71,23 +71,24 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
         boolean hasNextPage;
         Long startFrom = 0L;
         int pageNumber = 0;
-        int pageSize = 100;
+        int pageSize = 1000;
+        Map<Long, Boolean> pageIdsMap;
+        Dataset<Row> pageIdsDS;
         do {
-            streamFilter.reset();
+            streamTimerFilter.reset();
 
             System.out.println("Collect Ids For page " + (pageNumber + 1) + " start form id " + startFrom);
-            Dataset<Row> pageIdsDS = datasetHelper.collectIdsForSpecificPage(idsSorted, startFrom, pageSize, prop.getId(), streamFilter);
+            pageIdsDS = datasetHelper.collectIdsForSpecificPage(idsSorted, startFrom, pageSize, prop.getId(), streamTimerFilter);
 
             System.out.println("Collect ids as a Map");
-            Map<Long, Boolean> pageIdsMap = datasetHelper.collectAsMap(pageIdsDS, prop.getId(), streamFilter);
+            pageIdsMap =  datasetHelper.collectAsMap(pageIdsDS, prop.getId(), streamTimerFilter);
 
             if (pageIdsMap.size() > 0) {
                 System.out.println("Get the next start from ID - by taking the Max Id");
                 startFrom = pageIdsMap.keySet().stream().max(Long::compareTo).orElse(-1L);
 
                 System.out.println("Filter the source DF by the ids Map");
-                Dataset<Row> page = datasetHelper.filter(dataSource, pageIdsMap, prop.getId(), streamFilter);
-                page.show();
+                datasetHelper.filter(dataSource, pageIdsMap, prop.getId(), streamTimerFilter);
 //                statistics(startFrom, pageNumber, pageIdsDS, pageIdsMap, page);
 
                 startFrom++;
@@ -98,7 +99,7 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
                 hasNextPage = false;
             }
 
-            System.err.println("\n\nTotal Duration: " + streamFilter.totalDuration + "\n\n");
+            System.err.println("\n\nTotal Duration: " + streamTimerFilter.totalDuration + "\n\n");
         }
         while (hasNextPage);
     }
@@ -113,9 +114,12 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
     }
 
     public static void main(String[] args) {
+        SparkSessionInitializer sessionInitializer = new SparkSessionInitializer();
+        SparkSession sparkSession = sessionInitializer.init();
+
         Prop prop = new Properties_1();
         BigFilterPageBeforeFilter_Map app = new BigFilterPageBeforeFilter_Map(prop);
-        SparkSession sparkSession = app.init();
+
         app.run(sparkSession);
     }
 }

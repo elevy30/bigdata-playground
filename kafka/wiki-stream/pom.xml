@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>wiki-stream</artifactId>
+    <artifactId>wiki-streamTimer</artifactId>
 
     <dependencies>
         <dependency>

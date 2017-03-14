@@ -15,5 +15,6 @@
 
     <modules>
         <module>hadoop-permission</module>
+        <module>hdfs</module>
     </modules>
 </project>

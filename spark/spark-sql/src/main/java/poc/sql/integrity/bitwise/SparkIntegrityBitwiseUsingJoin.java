@@ -10,7 +10,7 @@ import org.apache.spark.sql.types.StructType;
 import poc.sql.integrity.internal.generator.BitwiseGenerator;
 import poc.sql.integrity.internal.helper.BitwiseHelper;
 import poc.sql.integrity.internal.helper.FileHelper;
-import poc.sql.integrity.internal.helper.SparkSessionInitializer;
+import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.prop.Prop;
 import poc.sql.integrity.internal.prop.Properties_2;
 
@@ -69,9 +69,7 @@ public class SparkIntegrityBitwiseUsingJoin implements Serializable {
 
         Dataset<Row> joined = bitwiseHelper.joinIdsWithFullData(dataSource, idsDS, columnLocationMap);
         joined.show();
-
     }
-
 
     private Dataset<Row> createIntegrityDataSet(SparkSession sc, Dataset<Row> dataSet) {
         JavaRDD<Row> dataSetRDD = dataSet.toJavaRDD();
@@ -103,7 +101,6 @@ public class SparkIntegrityBitwiseUsingJoin implements Serializable {
 
         return sc.createDataFrame(integrityRowRDD, schema);
     }
-
 
     public static void main(String[] args) {
         SparkIntegrityBitwiseUsingJoin app = new SparkIntegrityBitwiseUsingJoin();
