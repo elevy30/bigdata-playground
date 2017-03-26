@@ -1,5 +1,7 @@
 package poc.sql.dataloader;
 
+import au.com.bytecode.opencsv.CSVParser;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.*;
@@ -8,6 +10,7 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import poc.commons.SparkSessionInitializer;
+import poc.sql.integrity.internal.helper.FileHelper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,15 +22,16 @@ import java.util.stream.IntStream;
  */
 public class RDDConverter {
 
-    private static final int FIELD_COUNT = 3000;
+    private static final int FIELD_COUNT = 1900;
 
-    private Dataset<Row> createBigSchema(SparkSession sparkSession , int startColName, int fieldNumber) {
+    private Dataset<Row> createBigSchema(SparkSession sparkSession, int startColName, int fieldNumber) {
         JavaSparkContext jsc = new JavaSparkContext(sparkSession.sparkContext());
         SQLContext sqlContext = new SQLContext(sparkSession.sparkContext());
 
         String[] row = IntStream.range(startColName, fieldNumber).mapToObj(String::valueOf).toArray(String[]::new);
         List<String[]> data = Collections.singletonList(row);
         JavaRDD<Row> rdd = jsc.parallelize(data).map(RowFactory::create);
+
 
         //        StructField id = DataTypes.createStructField("ID", DataTypes.LongType, false);
 
@@ -36,12 +40,11 @@ public class RDDConverter {
                 .toArray(StructField[]::new);
         StructType schema = DataTypes.createStructType(structFields);
 
-        Dataset<Row> dataSet = sqlContext.createDataFrame(rdd.collect(), schema);
+        Dataset<Row> dataSet = sqlContext.createDataFrame(rdd, schema);
         dataSet.show();
         return dataSet;
     }
 
-//
 //    private Dataset<Row> convertDataset(SparkSession sparkSession , int startColName, int fieldNumber) {
 //        JavaSparkContext jsc = new JavaSparkContext(sparkSession.sparkContext());
 //        SQLContext sqlContext = new SQLContext(sparkSession.sparkContext());
@@ -56,26 +59,36 @@ public class RDDConverter {
 //        dataSet.show();
 //        return dataSet;
 //    }
+//
 
-    private void unionBigSchema(SparkSession sparkSession) {
-        Dataset<Row> bigSchema1 = createBigSchema(sparkSession, 0, 901);
-        Dataset<Row> bigSchema2 = createBigSchema(sparkSession, 900, 1800);
-        Column joinedColumn = bigSchema1.col("900").equalTo(bigSchema2.col("900"));
-        Dataset<Row> join = bigSchema1.join(bigSchema2, joinedColumn);
-        join.show();
+    public void rddConvertor(SparkSession sparkSession) {
+        FileHelper fileHelper = new FileHelper();
+        SQLContext sqlContext = new SQLContext(sparkSession);
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, "file:///opt/Dropbox/dev/git-hub/poc/_resources/data/dataloader/ds1.csv");
 
+//        CSVParser parser = new CSVParser();
+        JavaPairRDD<Row, Long> rowLongJavaPairRDD = dataSource.toJavaRDD().zipWithIndex();
+        JavaRDD<String> rddWithIndex = rowLongJavaPairRDD.map(t -> {
+            String line = t._1().toString();
+            StringBuilder builder = new StringBuilder(line);
+//            builder.deleteCharAt(0);
+//            builder.deleteCharAt(builder.length() - 1);
+            return builder.toString();
+//            String[] fields = parser.parseLine(builder.toString());
+//            return t._2() + "," + Arrays.toString(fields);
+        });
+
+
+        System.out.println(rddWithIndex.collect());
     }
-
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
         SparkSession sparkSession = sparkSessionInitializer.init();
 
-
-
         RDDConverter rddConverter = new RDDConverter();
-        rddConverter.createBigSchema(sparkSession, 0, FIELD_COUNT);
-//        rddConverter.unionBigSchema(sparkSession);
+//        rddConverter.createBigSchema(sparkSession, 0, FIELD_COUNT);
+        rddConverter.rddConvertor(sparkSession);
     }
 
 

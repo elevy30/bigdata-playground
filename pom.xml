@@ -19,6 +19,8 @@
         <module>titan</module>
         <module>drools</module>
         <module>scala</module>
+        <module>titan-on-iod</module>
+        <module>activemq</module>
     </modules>
 
     <build>
