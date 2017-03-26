@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import poc.activemq.queue.consumer.JavaActiveMQConsumer;
 import poc.activemq.queue.consumer.MessageConsumer;
 import poc.activemq.queue.producer.MessageProducer;
+import poc.activemq.queue.util.MessageBuilder;
 
 import javax.jms.JMSException;
 import java.util.concurrent.ExecutorService;
@@ -21,40 +22,34 @@ public class MainJava {
     private static int NUM_OF_MSG = 100000;
 
     public static void main(String[] args) {
-        MessageProducer producer = new MessageProducer(PRODUCER_NUM_THREAD);
-        JavaActiveMQConsumer javaConsumer;
         try {
-            javaConsumer = new JavaActiveMQConsumer("test", 1, new String[]{"localhost:8161"}, "admin", "admin");
+            String message = MessageBuilder.generateMsg();
 
-            StringBuilder messageBuilder = new StringBuilder("");
-            for (int i = 1; i < 100; i++) {
-                messageBuilder.append(",column_").append(i);
-            }
-            String message = messageBuilder.toString();
-
-            runProducer(producer, message);
-            runConsumer(javaConsumer);
+            runProducer(message);
+            runConsumer();
         } catch (JMSException e) {
             e.printStackTrace();
         }
     }
 
-    private static void runConsumer(JavaActiveMQConsumer consumer) {
+    private static void runProducer(String message) {
+        LOGGER.info("start producer");
+        MessageProducer producer = new MessageProducer(PRODUCER_NUM_THREAD);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> producer.send(message, NUM_OF_MSG));
+    }
+
+    private static void runConsumer() throws JMSException {
         LOGGER.info("start consumer");
+        JavaActiveMQConsumer javaConsumer = new JavaActiveMQConsumer("test", 1, new String[]{"localhost:8161"}, "admin", "admin");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             try {
 //                consumer.daemon(new MessageConsumer());
-                consumer.consume();
+                javaConsumer.consume();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
-    }
-
-    private static void runProducer(MessageProducer producer, String message) {
-        LOGGER.info("start producer");
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> producer.send(message, NUM_OF_MSG));
     }
 }
