@@ -41,7 +41,7 @@ public class MainJava {
 
     private static void runConsumer() throws JMSException {
         LOGGER.info("start consumer");
-        JavaActiveMQConsumer javaConsumer = new JavaActiveMQConsumer("test", 1, new String[]{"localhost:8161"}, "admin", "admin");
+        JavaActiveMQConsumer javaConsumer = new JavaActiveMQConsumer("localhost:61616","admin","admin", "test", 1);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             try {

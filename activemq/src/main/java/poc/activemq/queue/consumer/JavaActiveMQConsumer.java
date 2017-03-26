@@ -37,23 +37,22 @@ public class JavaActiveMQConsumer implements ExceptionListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaActiveMQConsumer.class);
 
-    private String queueNames;
-    private Integer threads;
-    private String[] brokerHosts;
+    private String brokerHost;
     private String user;
     private String password;
 
-    private Session session;
-    private Destination destination;
+    private String queueNames;
+    private Integer threads;
 
+    private Connection connection;
 
-    public JavaActiveMQConsumer(String queueNames, Integer threads, String[] brokerHosts, String user, String password) throws JMSException {
-        LOGGER.info("init HttpActiveMQConsumer");
+    public JavaActiveMQConsumer(String brokerHost, String user, String password, String queueNames, Integer threads) throws JMSException {
+        LOGGER.info("init JavaActiveMQConsumer");
         // Clone is enough because Strings are immutable
         this.queueNames = queueNames;
         this.threads = threads;
         // Clone is enough because Strings are immutable
-        this.brokerHosts = brokerHosts == null ? null : brokerHosts.clone();
+        this.brokerHost = brokerHost == null ? null : "localhost:61616";
         this.user = user;
         this.password = password;
 
@@ -62,20 +61,14 @@ public class JavaActiveMQConsumer implements ExceptionListener {
 
     private void init() throws JMSException {
         // Create a ConnectionFactory
-        // ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin","admin","tcp://localhost:61616");
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", "tcp://localhost:61616?jms.prefetchPolicy.all=50");
-        // ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin","admin","tcp://localhost:61616?jms.prefetchPolicy.queuePrefetch=1");
+        // ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost);
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost + "?jms.prefetchPolicy.all=10");
+        // ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost + "?jms.prefetchPolicy.queuePrefetch=1");
 
         // Create a Connection
-        Connection connection = connectionFactory.createConnection();
+        connection = connectionFactory.createConnection();
         connection.start();
         connection.setExceptionListener(this);
-
-        // Create a Session
-        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-        // Create the destination (Topic or Queue)
-        destination = session.createQueue(queueNames);
     }
 
     public synchronized void onException(JMSException ex) {
@@ -83,8 +76,15 @@ public class JavaActiveMQConsumer implements ExceptionListener {
     }
 
 
-    public void consume() {
+    public void consume() throws JMSException {
         LOGGER.info("start consumer");
+
+        // Create a Session
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        // Create the destination (Topic or Queue)
+        Destination destination = session.createQueue(queueNames);
+
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             try {
@@ -107,57 +107,57 @@ public class JavaActiveMQConsumer implements ExceptionListener {
         });
     }
 
-    @Async
-    public void daemon(final Consumer<String>... consumers) throws Exception {
-        if (queueNames == null) {
-            throw new IllegalArgumentException("At least one queue must be provided");
-        }
-//        if (queueNames.length != consumers.length) {
-//            throw new IllegalArgumentException("The number of consumers methods must match the number of queues");
+//    @Async
+//    public void daemon(final Consumer<String>... consumers) throws Exception {
+//        if (queueNames == null) {
+//            throw new IllegalArgumentException("At least one queue must be provided");
 //        }
-
-        // Create a future to wait for all queue polling threads
-        ExecutorService executor = Executors.newFixedThreadPool(threads * consumers.length);
-        CompletableFuture.allOf(
-                // Create pairs of matching queue name and consumer method
-                IntStream.range(0, 1)
-                        .mapToObj(i -> new AbstractMap.SimpleEntry<>(queueNames, consumers[i]))
-                        .collect(Collectors.toList())
-                        .stream()
-                        // For each pair create the requested threads
-                        .flatMap(pair ->
-                                // Create multiple threads
-                                // First create a stream of indexes from 1 to the number of required threads
-                                IntStream.rangeClosed(1, threads)
-                                        // For each index create a future
-                                        .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
-                                            LOGGER.info(String.format("Thread %s: Polling queue %s", i, pair.getKey()));
-
-                                            // Create a MessageConsumer from the Session to the Topic or Queue
-                                            MessageConsumer consumer;
-                                            try {
-                                                consumer = session.createConsumer(destination);
-                                                do {
-                                                    Message message = consumer.receiveNoWait();
-                                                    printMsg(message);
-                                                    sleepAfterException(10L);
-                                                } while (!Thread.currentThread().isInterrupted());
-                                            } catch (Exception e) {
-                                                // Adding this general exception handler to avoid unexpected queue disconnections.
-                                                LOGGER.error("Caught unexpected exception on queue {}: {}", pair.getKey(), e.getMessage());
-                                                e.printStackTrace();
-                                                sleepAfterException(1000L);
-                                            }
-                                            LOGGER.info("Disconnected from queue {}", pair.getKey());
-
-                                            return null;
-                                        }, executor))
-                        )
-                        .toArray(CompletableFuture[]::new)
-        )
-                // Wait for the joined future to end
-                .get();
-    }
+////        if (queueNames.length != consumers.length) {
+////            throw new IllegalArgumentException("The number of consumers methods must match the number of queues");
+////        }
+//
+//        // Create a future to wait for all queue polling threads
+//        ExecutorService executor = Executors.newFixedThreadPool(threads * consumers.length);
+//        CompletableFuture.allOf(
+//                // Create pairs of matching queue name and consumer method
+//                IntStream.range(0, 1)
+//                        .mapToObj(i -> new AbstractMap.SimpleEntry<>(queueNames, consumers[i]))
+//                        .collect(Collectors.toList())
+//                        .stream()
+//                        // For each pair create the requested threads
+//                        .flatMap(pair ->
+//                                // Create multiple threads
+//                                // First create a stream of indexes from 1 to the number of required threads
+//                                IntStream.rangeClosed(1, threads)
+//                                        // For each index create a future
+//                                        .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
+//                                            LOGGER.info(String.format("Thread %s: Polling queue %s", i, pair.getKey()));
+//
+//                                            // Create a MessageConsumer from the Session to the Topic or Queue
+//                                            MessageConsumer consumer;
+//                                            try {
+//                                                consumer = session.createConsumer(destination);
+//                                                do {
+//                                                    Message message = consumer.receiveNoWait();
+//                                                    printMsg(message);
+//                                                    sleepAfterException(10L);
+//                                                } while (!Thread.currentThread().isInterrupted());
+//                                            } catch (Exception e) {
+//                                                // Adding this general exception handler to avoid unexpected queue disconnections.
+//                                                LOGGER.error("Caught unexpected exception on queue {}: {}", pair.getKey(), e.getMessage());
+//                                                e.printStackTrace();
+//                                                sleepAfterException(1000L);
+//                                            }
+//                                            LOGGER.info("Disconnected from queue {}", pair.getKey());
+//
+//                                            return null;
+//                                        }, executor))
+//                        )
+//                        .toArray(CompletableFuture[]::new)
+//        )
+//                // Wait for the joined future to end
+//                .get();
+//    }
 
     private void printMsg(Message message) throws JMSException {
         if (message != null) {

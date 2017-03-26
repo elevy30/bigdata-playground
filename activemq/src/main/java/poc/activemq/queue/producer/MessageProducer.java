@@ -25,7 +25,7 @@ public class MessageProducer {
                 long id = System.currentTimeMillis();
                 TimeUnit.MILLISECONDS.sleep(1);
                 String msg = id + "___" + message;
-                LOGGER.info("====> Sending message {}", msg);
+                //LOGGER.info("====> Sending message {}", msg);
                 mqProducerController.sendToQueue(msg, "test");
                 return id;
             } catch (InterruptedException e) {
@@ -43,8 +43,8 @@ public class MessageProducer {
                 e.printStackTrace();
             }
 
-            LOGGER.info("future done? " + future.isDone());
-            LOGGER.info("result: " + result);
+            //LOGGER.info("future done? " + future.isDone());
+            //LOGGER.info("result: " + result);
         }
     }
 }

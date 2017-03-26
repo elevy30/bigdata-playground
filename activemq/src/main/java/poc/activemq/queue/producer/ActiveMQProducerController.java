@@ -37,19 +37,18 @@ public class ActiveMQProducerController implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActiveMQProducerController.class);
 
-    private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://%s&jms.prefetchPolicy.all=50";
+    private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://test";
 //    private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://%s";
     private static final int RETRIES = 1;
 
-    private String brokerUrl ="http://admin:admin@localhost:8161/api/message?destination=queue://%s&jms.prefetchPolicy.all=50";
-//    private String brokerUrl ="http://admin:admin@localhost:8161/api/message?destination=queue://%s";
+    private String brokerUrl ="http://admin:admin@localhost:8161/api/message?destination=queue://%s";
 
-    @Value("${broker.hosts:localhost:8161}")
-    private String[] brokerHosts;
-    @Value("${broker.user:admin}")
-    private String user;
-    @Value("${broker.password:admin}")
-    private String password;
+    @Value("${broker.hosts}")
+    private String[] brokerHosts = new String[]{"localhost:8161"};
+    @Value("${broker.user}")
+    private String user = "admin";
+    @Value("${broker.password}")
+    private String password = "admin";
 
     int sendToQueue(final String message, @SuppressWarnings("SameParameterValue") final String queueName) {
 
