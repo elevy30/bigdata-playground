@@ -1,5 +1,6 @@
 package poc.activemq.queue.producer;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -7,12 +8,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import poc.activemq.queue.ActiveMQBrokerFailover;
+import poc.activemq.queue.util.ActiveMQBrokerFailover;
 
 import java.io.IOException;
 
@@ -33,15 +32,14 @@ import java.io.IOException;
  * Date: 29/07/2016
  */
 @Service
-public class ActiveMQProducerController implements InitializingBean {
+@Slf4j
+public class HttpActiveMQProducer implements InitializingBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActiveMQProducerController.class);
-
-    private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://test";
+    private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://test&jms.closeTimeout=5000";
 //    private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://%s";
     private static final int RETRIES = 1;
 
-    private String brokerUrl ="http://admin:admin@localhost:8161/api/message?destination=queue://%s";
+    private String brokerUrl ="http://admin:admin@localhost:8161/api/message?destination=queue://%s&jms.closeTimeout=5000";
 
     @Value("${broker.hosts}")
     private String[] brokerHosts = new String[]{"localhost:8161"};
@@ -53,7 +51,6 @@ public class ActiveMQProducerController implements InitializingBean {
     int sendToQueue(final String message, @SuppressWarnings("SameParameterValue") final String queueName) {
 
         HttpClient httpClient = HttpClientBuilder.create().build();
-
         int status = Integer.MIN_VALUE;
         for (int i = 0; status != HttpStatus.SC_OK && i < RETRIES; i++) {
             // Send the message to the API
@@ -65,7 +62,7 @@ public class ActiveMQProducerController implements InitializingBean {
                 HttpResponse queueResponse = httpClient.execute(post);
                 status = queueResponse.getStatusLine().getStatusCode();
             } catch (IOException e) {
-                LOGGER.error("Failed to send request to queue", e);
+                log.error("Failed to send request to queue", e);
                 status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 
                 // If the response failed try to identify the active broker again as a failover
@@ -74,7 +71,7 @@ public class ActiveMQProducerController implements InitializingBean {
                     try {
                         brokerUrl = ActiveMQBrokerFailover.getMasterBrokerUrl(BROKER_URL_FORMAT, user, password, brokerHosts);
                     } catch (Exception e1) {
-                        LOGGER.error("Failed to get an active message queue broker", e1);
+                        log.error("Failed to get an active message queue broker", e1);
                         return HttpStatus.SC_INTERNAL_SERVER_ERROR;
                     }
                 }

@@ -1,4 +1,4 @@
-package poc.activemq.queue;
+package poc.activemq.queue.util;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

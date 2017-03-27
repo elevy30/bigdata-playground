@@ -4,9 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import poc.activemq.queue.consumer.HttpActiveMQConsumer;
 import poc.activemq.queue.consumer.MessageConsumer;
-import poc.activemq.queue.producer.MessageProducer;
+import poc.activemq.queue.producer.ProducerWrapper;
 import poc.activemq.queue.util.MessageBuilder;
 
+import javax.jms.JMSException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,9 +19,9 @@ public class MainHttp {
 
     private static int PRODUCER_NUM_THREAD = 10;
     private static int CONSUMER_NUM_THREAD = 1;
-    private static int NUM_OF_MSG = 1000;
+    private static int NUM_OF_MSG = 50000;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JMSException {
         String message = MessageBuilder.generateMsg();
 
         runProducer(message);
@@ -40,10 +41,10 @@ public class MainHttp {
         });
     }
 
-    private static void runProducer( String message) {
+    private static void runProducer( String message) throws JMSException {
         LOGGER.info("start producer");
-        MessageProducer producer = new MessageProducer(PRODUCER_NUM_THREAD);
+        ProducerWrapper producer = new ProducerWrapper("localhost:61616","admin","admin", "test");
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> producer.send(message, NUM_OF_MSG));
+        executor.submit(() -> producer.send(message, NUM_OF_MSG, "http"));
     }
 }

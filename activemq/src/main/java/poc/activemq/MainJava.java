@@ -3,8 +3,7 @@ package poc.activemq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import poc.activemq.queue.consumer.JavaActiveMQConsumer;
-import poc.activemq.queue.consumer.MessageConsumer;
-import poc.activemq.queue.producer.MessageProducer;
+import poc.activemq.queue.producer.ProducerWrapper;
 import poc.activemq.queue.util.MessageBuilder;
 
 import javax.jms.JMSException;
@@ -32,21 +31,20 @@ public class MainJava {
         }
     }
 
-    private static void runProducer(String message) {
+    private static void runProducer(String message) throws JMSException {
         LOGGER.info("start producer");
-        MessageProducer producer = new MessageProducer(PRODUCER_NUM_THREAD);
+        ProducerWrapper producer = new ProducerWrapper("localhost:61616","admin","admin", "test");
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> producer.send(message, NUM_OF_MSG));
+        executor.submit(() -> producer.send(message, NUM_OF_MSG, "java"));
     }
 
     private static void runConsumer() throws JMSException {
         LOGGER.info("start consumer");
-        JavaActiveMQConsumer javaConsumer = new JavaActiveMQConsumer("localhost:61616","admin","admin", "test", 1);
+        JavaActiveMQConsumer javaConsumer = new JavaActiveMQConsumer("localhost:61616","admin","admin", "test");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             try {
-//                consumer.daemon(new MessageConsumer());
-                javaConsumer.consume();
+                javaConsumer.consumeOneThread();
             } catch (Exception e) {
                 e.printStackTrace();
             }

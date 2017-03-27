@@ -1,11 +1,14 @@
 package poc.activemq.queue.consumer;
 
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Properties;
 
+@Slf4j
 public class QueueSubscriber {
 
     private String queueName = "test";

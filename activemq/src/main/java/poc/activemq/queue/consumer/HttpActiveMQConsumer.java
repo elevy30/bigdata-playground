@@ -1,15 +1,14 @@
 package poc.activemq.queue.consumer;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
-import poc.activemq.queue.ActiveMQBrokerFailover;
+import poc.activemq.queue.util.ActiveMQBrokerFailover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,9 +40,8 @@ import java.util.stream.IntStream;
  * User: sigals
  * Date: 29/07/2016
  */
+@Slf4j
 public class HttpActiveMQConsumer {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpActiveMQConsumer.class);
 
     private static final String BROKER_URL_FORMAT = "http://%s:%s@%s/api/message?destination=queue://%s&oneShot=true&jms.prefetchPolicy.all=50";
 
@@ -54,7 +52,7 @@ public class HttpActiveMQConsumer {
     private String password;
 
     public HttpActiveMQConsumer(String[] queueNames, Integer threads, String[] brokerHosts, String user, String password) {
-        LOGGER.info("init HttpActiveMQConsumer");
+        log.info("init HttpActiveMQConsumer");
         // Clone is enough because Strings are immutable
         this.queueNames = queueNames == null ? null : queueNames.clone();
         this.threads = threads;
@@ -96,11 +94,11 @@ public class HttpActiveMQConsumer {
                                                         ActiveMQBrokerFailover.getMasterBrokerUrl(BROKER_URL_FORMAT, user, password, brokerHosts, pair.getKey());
                                             } catch (Exception e) {
                                                 // Can't get a broker URI, stop the future
-                                                LOGGER.error("Failed to identify the master broker, exiting...", e);
+                                                log.error("Failed to identify the master broker, exiting...", e);
                                                 return null;
                                             }
 
-                                            LOGGER.info(String.format("Thread %s: Polling queue %s", i, pair.getKey()));
+                                            log.info(String.format("Thread %s: Polling queue %s", i, pair.getKey()));
 
                                             // The URL to consume messages from the queue, hangs until a message is available,
                                             // unless it timeouts. In any case we'd like to call the URL again to get the next
@@ -120,20 +118,20 @@ public class HttpActiveMQConsumer {
                                                         InputStream is = response.getEntity().getContent();
                                                         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(is))) {
                                                             String collect = buffer.lines().collect(Collectors.joining("\n"));
-                                                            LOGGER.info(collect);
+                                                           // log.info(collect);
                                                             pair.getValue().accept(collect);
                                                         } finally {
                                                             try {
                                                                 is.close();
                                                             } catch (IOException e) {
-                                                                LOGGER.error("Unable to read data", e);
+                                                                log.error("Unable to read data", e);
                                                             }
                                                         }
                                                     } else {
                                                         if (statusCode != HttpStatus.SC_NO_CONTENT) {
-                                                            LOGGER.info(response.getStatusLine().getReasonPhrase());
-//                                                            LOGGER.info(response.getReasonPhrase());
-                                                            LOGGER.info("Couldn't get content from queue, status code on queue {}: {}", pair.getKey(), statusCode);
+                                                            log.info(response.getStatusLine().getReasonPhrase());
+//                                                            log.info(response.getReasonPhrase());
+                                                            log.info("Couldn't get content from queue, status code on queue {}: {}", pair.getKey(), statusCode);
                                                         }
                                                     }
                                                 } catch (NoHttpResponseException e) {
@@ -145,22 +143,26 @@ public class HttpActiveMQConsumer {
                                                                             BROKER_URL_FORMAT, user, password, brokerHosts, pair.getKey());
                                                         }
                                                     } catch (Exception e1) {
-                                                        if (LOGGER.isTraceEnabled()) {
-                                                            LOGGER.trace("Failed to identify the master broker", e);
+                                                        if (log.isTraceEnabled()) {
+                                                            log.trace("Failed to identify the master broker", e);
                                                         }
                                                     }
                                                 } catch (IOException e) {
-                                                    LOGGER.error("Unable to read data from queue {}: {}", pair.getKey(), e.getMessage());
+                                                    log.error("Unable to read data from queue {}: {}", pair.getKey(), e.getMessage());
                                                     sleepAfterException(1000L);
                                                 } catch (Exception e) {
                                                     // Adding this general exception handler to avoid unexpected queue disconnections.
-                                                    LOGGER.error("Caught unexpected exception on queue {}: {}", pair.getKey(), e.getMessage());
+                                                    log.error("Caught unexpected exception on queue {}: {}", pair.getKey(), e.getMessage());
                                                     sleepAfterException(2000L);
+                                                }finally {
+
+                                                    //client.
+
                                                 }
 
                                             } while (!Thread.currentThread().isInterrupted());
 
-                                            LOGGER.info("Disconnected from queue {}", pair.getKey());
+                                            log.info("Disconnected from queue {}", pair.getKey());
 
                                             return null;
                                         }, executor))
