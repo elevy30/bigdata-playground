@@ -33,11 +33,11 @@ public class JavaActiveMQProducer implements ExceptionListener {
 //    }
 
     public JavaActiveMQProducer(String brokerHost, String user, String password, String queueNames) throws JMSException {
-        log.info("init JavaActiveMQConsumer");
+        log.info("init JavaActiveMQProducer {}", brokerHost);
         // Clone is enough because Strings are immutable
         this.queueNames = queueNames;
         // Clone is enough because Strings are immutable
-        this.brokerHost = brokerHost == null ? null : "localhost:61616";
+        this.brokerHost = brokerHost;
         this.user = user;
         this.password = password;
 
@@ -47,8 +47,9 @@ public class JavaActiveMQProducer implements ExceptionListener {
     @SuppressWarnings("Duplicates")
     private void init() throws JMSException {
         // Create a ConnectionFactory
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost + "?jms.prefetchPolicy.all=10&jms.optimizeAcknowledge=true");
-        // ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost + "?jms.prefetchPolicy.queuePrefetch=1");
+        log.info("{}", brokerHost);
+        String retryConfiguration =  "";//"?maxReconnectAttempts=10&warnAfterReconnectAttempts=5";
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "failover:(tcp://" + brokerHost + ")"+ retryConfiguration);
 
         // Create a Connection
         Connection connection = connectionFactory.createConnection();

@@ -103,7 +103,7 @@ public class BigFilterWithPairRDD implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.init();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
 
         BigFilterWithPairRDD app = new BigFilterWithPairRDD();
         app.run(sparkSession);

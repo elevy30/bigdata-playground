@@ -134,7 +134,7 @@ public class BigFilterPageBeforeFilter_List implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.init();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
 
         BigFilterPageBeforeFilter_List app = new BigFilterPageBeforeFilter_List();
         app.run(sparkSession);

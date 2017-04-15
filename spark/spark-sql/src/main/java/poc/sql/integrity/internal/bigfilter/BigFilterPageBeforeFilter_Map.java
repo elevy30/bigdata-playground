@@ -115,7 +115,7 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sessionInitializer.init();
+        SparkSession sparkSession = sessionInitializer.getSparkSession();
 
         Prop prop = new Properties_1();
         BigFilterPageBeforeFilter_Map app = new BigFilterPageBeforeFilter_Map(prop);

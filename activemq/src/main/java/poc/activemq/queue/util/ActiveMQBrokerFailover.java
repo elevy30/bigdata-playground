@@ -1,5 +1,7 @@
 package poc.activemq.queue.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -9,6 +11,7 @@ import java.net.Socket;
  * User: sigals
  * Date: 29/07/2016
  */
+@Slf4j
 public class ActiveMQBrokerFailover {
 
     /**
@@ -47,7 +50,7 @@ public class ActiveMQBrokerFailover {
      * @param brokerHosts Array of active MQ broker hosts
      */
     private static String getMasterBroker(String[] brokerHosts) throws Exception {
-
+    log.info("{}", brokerHosts);
         for ( String host : brokerHosts) {
             try {
                 // Attempt to connect to the host:port, if successful this is the address of the active (master) broker

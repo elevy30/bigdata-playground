@@ -1,6 +1,5 @@
 package poc.sql.dataloader;
 
-import au.com.bytecode.opencsv.CSVParser;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -12,7 +11,6 @@ import org.apache.spark.sql.types.StructType;
 import poc.commons.SparkSessionInitializer;
 import poc.sql.integrity.internal.helper.FileHelper;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -20,7 +18,7 @@ import java.util.stream.IntStream;
 /**
  * Created by eyallevy on 05/03/17.
  */
-public class RDDConverter {
+public class RDDToDF_CreateDataFrame {
 
     private static final int FIELD_COUNT = 1900;
 
@@ -33,7 +31,7 @@ public class RDDConverter {
         JavaRDD<Row> rdd = jsc.parallelize(data).map(RowFactory::create);
 
 
-        //        StructField id = DataTypes.createStructField("ID", DataTypes.LongType, false);
+        //StructField id = DataTypes.createStructField("ID", DataTypes.LongType, false);
 
         StructField[] structFields = IntStream.range(startColName, fieldNumber)
                 .mapToObj(i -> new StructField(String.valueOf(i), DataTypes.StringType, true, Metadata.empty()))
@@ -64,7 +62,7 @@ public class RDDConverter {
     public void rddConvertor(SparkSession sparkSession) {
         FileHelper fileHelper = new FileHelper();
         SQLContext sqlContext = new SQLContext(sparkSession);
-        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, "file:///opt/Dropbox/dev/git-hub/poc/_resources/data/dataloader/ds1.csv");
+        Dataset<Row> dataSource = fileHelper.readCSV(sqlContext, System.getProperty("user.dir") + "/_resources/data/dataloader/ds1.csv");
 
 //        CSVParser parser = new CSVParser();
         JavaPairRDD<Row, Long> rowLongJavaPairRDD = dataSource.toJavaRDD().zipWithIndex();
@@ -84,11 +82,11 @@ public class RDDConverter {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.init();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
 
-        RDDConverter rddConverter = new RDDConverter();
+        RDDToDF_CreateDataFrame rddToDFCreateDataFrame = new RDDToDF_CreateDataFrame();
 //        rddConverter.createBigSchema(sparkSession, 0, FIELD_COUNT);
-        rddConverter.rddConvertor(sparkSession);
+        rddToDFCreateDataFrame.rddConvertor(sparkSession);
     }
 
 

@@ -44,7 +44,7 @@ public class ProducerWrapper {
         for (int i = 0; i < numOfMsg; i++) {
             Future<Long> future = executor.submit(task);
             log.debug("future done? " + future.isDone());
-            Long result = null;
+            Long result;
             try {
                 result = future.get();
                 log.debug("future done? " + future.isDone());

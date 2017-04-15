@@ -5,9 +5,14 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
 import javax.jms.MessageConsumer;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class JavaActiveMQConsumer implements ExceptionListener {
@@ -40,7 +45,7 @@ public class JavaActiveMQConsumer implements ExceptionListener {
         // Clone is enough because Strings are immutable
         this.queueNames = queueNames;
         // Clone is enough because Strings are immutable
-        this.brokerHost = brokerHost == null ? null : "localhost:61616";
+        this.brokerHost = brokerHost;
         this.user = user;
         this.password = password;
 
@@ -50,7 +55,9 @@ public class JavaActiveMQConsumer implements ExceptionListener {
     @SuppressWarnings("Duplicates")
     private void init() throws JMSException {
         // Create a ConnectionFactory
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost + "?jms.prefetchPolicy.all=10&jms.optimizeAcknowledge=true");
+        String retryConfiguration =  "?maxReconnectAttempts=10&warnAfterReconnectAttempts=5";
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "failover:(tcp://" + brokerHost + ")"+ retryConfiguration);
+//        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "failover:tcp://" + brokerHost + "?jms.prefetchPolicy.all=10&jms.optimizeAcknowledge=true");
         // ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "tcp://" + brokerHost + "?jms.prefetchPolicy.queuePrefetch=1");
 
         // Create a Connection
@@ -66,7 +73,7 @@ public class JavaActiveMQConsumer implements ExceptionListener {
     }
 
     public synchronized void onException(JMSException ex) {
-        log.info("JMS Exception occured.  Shutting down client.");
+        log.info("JMS Exception occurred.  Shutting down client.");
     }
 
 
@@ -74,18 +81,18 @@ public class JavaActiveMQConsumer implements ExceptionListener {
         log.info("start consumer with one thread");
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> consume(session, destination));
+        executor.submit(() -> consumePushing(session, destination));
     }
 
     public void consumeMultiThread(int numOfThread) throws JMSException {
         log.info("start consumer with multi thread");
 
         ExecutorService executor = Executors.newFixedThreadPool(numOfThread);
-        executor.submit(() -> consume(session, destination));
+        executor.submit(() -> consumePushing(session, destination));
     }
 
 
-    private void consume(Session session, Destination destination) {
+    private void consumePulling(Session session, Destination destination) {
         try {
             log.info(String.format("Thread %s: Polling queue %s", Thread.currentThread().getName(), queueNames));
             // Create a MessageConsumer from the Session to the Topic or Queue
@@ -107,6 +114,52 @@ public class JavaActiveMQConsumer implements ExceptionListener {
         }
     }
 
+    private void consumePushing(Session session, Destination destination) {
+        try {
+            log.info(String.format("Thread %s: Polling queue %s", Thread.currentThread().getName(), queueNames));
+            // Create a MessageConsumer from the Session to the Topic or Queue
+            MessageConsumer consumer = session.createConsumer(destination);
+            consumer.setMessageListener(message -> {
+                try {
+                    collectMsg(message);
+                } catch (JMSException  e) {
+                    log.error("Caught unexpected exception on queue: {}", e.getMessage());
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            sleepAfterException(10L);
+
+            log.info("Disconnected from queue {}", queueNames);
+        } catch (Exception e) {
+            // Adding this general exception handler to avoid unexpected queue disconnections.
+            log.error("Caught unexpected exception on queue {}: {}", queueNames, e.getMessage());
+            e.printStackTrace();
+            sleepAfterException(1000L);
+        }
+    }
+
+    //todo - use string instead of InputStream
+    private void collectMsg(Message message) throws JMSException, IOException {
+        if (message != null) {
+            if (message instanceof TextMessage) {
+                TextMessage textMessage = (TextMessage) message;
+                String stringMessage = textMessage.getText();
+
+                InputStream is = new ByteArrayInputStream(stringMessage.getBytes(StandardCharsets.UTF_8));
+                try (BufferedReader buffer = new BufferedReader(new InputStreamReader(is))) {
+                    log.info(stringMessage);
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        log.error("Unable to read data", e);
+                    }
+                }
+            }
+        }
+    }
 
 //    @Async
 //    public void daemon(final Consumer<String>... consumers) throws Exception {

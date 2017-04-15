@@ -8,7 +8,7 @@ public class MessageBuilder {
     public static String generateMsg() {
         StringBuilder messageBuilder = new StringBuilder("");
         for (int i = 1; i < 100; i++) {
-            messageBuilder.append(",column_").append(i);
+            messageBuilder.append(",column_\n").append(i);
         }
         return messageBuilder.toString();
     }
