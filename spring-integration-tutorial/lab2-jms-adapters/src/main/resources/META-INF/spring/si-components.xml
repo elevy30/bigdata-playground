@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:int-jms="http://www.springframework.org/schema/integration/jms"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/integration        http://www.springframework.org/schema/integration/spring-integration.xsd
+	http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+	http://www.springframework.org/schema/integration/file   http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+	http://www.springframework.org/schema/integration/jms    http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd">
+
+
+	<bean id="jmsQueueConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL" value="tcp://localhost:61616"/>
+				<property name="userName" value="admin"/>
+				<property name="password" value="admin"/>
+			</bean>
+		</property>
+		<property name="sessionCacheSize" value="10"/>
+	</bean>
+
+	<bean id="requestQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="AA_stage1"/>
+	</bean>
+
+	<bean id="replyQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="BB_stage2"/>
+	</bean>
+
+	<!-- <int-stream:stdin-channel-adapter id="producer" -->
+	<!-- channel="messageChannel" /> -->
+
+	<!-- Adapter for reading files -->
+	<int-jms:inbound-channel-adapter id="producer-jms-adapter" channel="jmsMessageChannel" connection-factory="jmsQueueConnectionFactory" destination="requestQueue">
+		<int:poller fixed-rate="3000" />
+	</int-jms:inbound-channel-adapter>
+
+	<!-- <int-stream:stdout-channel-adapter -->
+	<!-- id="consumer" channel="messageChannel" append-newline="true" /> -->
+
+	<!-- Adapter for writing files -->
+	<int-jms:outbound-channel-adapter id="consumer-jms-adapter" channel="jmsMessageChannel" connection-factory="jmsQueueConnectionFactory" destination="replyQueue" >
+		<int:poller fixed-rate="3000" />
+	</int-jms:outbound-channel-adapter>
+
+	<int:poller id="defaultPoller" default="true" max-messages-per-poll="5" fixed-rate="200" />
+
+	<!-- a poolable channel -->
+	<int:channel id="jmsMessageChannel">
+		<int:queue capacity="2" />
+	</int:channel>
+</beans>
+

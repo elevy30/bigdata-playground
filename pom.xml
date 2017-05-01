@@ -16,11 +16,11 @@
         <module>hadoop</module>
         <module>cassandra</module>
         <module>spring-boot-web</module>
-        <module>titan</module>
+        <!--<module>titan</module>-->
         <module>drools</module>
         <module>scala</module>
-        <module>titan-on-iod</module>
         <module>activemq</module>
+        <module>spring-integration-tutorial</module>
     </modules>
 
     <build>

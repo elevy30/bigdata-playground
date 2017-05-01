@@ -24,7 +24,7 @@ public class FileHelper implements Serializable{
         return sqlContext.read()
                 .option("header", true)
                 .option("sep", ",")
-                .option("inferSchema", "true")
+//                .option("inferSchema", "true")
                 .csv(csvPath);
     }
 

@@ -9,11 +9,13 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.expressions.Window;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import poc.commons.SparkSessionInitializer;
+import poc.sql.integrity.internal.helper.FileHelper;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -25,14 +27,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.row_number;
-import static org.apache.spark.sql.functions.lit;
 import static org.apache.spark.sql.functions.*;
 import static scala.collection.JavaConversions.seqAsJavaList;
-
-import org.apache.spark.sql.expressions.*;
-import poc.sql.integrity.internal.helper.FileHelper;
 
 /***
  * Created by elevy on 15-Apr-17.
@@ -43,33 +39,51 @@ public class SparkSequenceService {
 
     public static void main(String[] args) {
         SparkSequenceService sparkSequenceService = new SparkSequenceService();
-        sparkSequenceService.addSequenceUsingRowNumber(400);
-    }
-
-    public void addSequenceUsingRowNumber(long offset){
-        SparkSession sparkSession =  new SparkSessionInitializer().getSparkSession();
-        SQLContext sqlContext = new SQLContext(sparkSession);
+        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession();
         FileHelper fileHelper = new FileHelper();
-        Dataset<Row> rowDataset = fileHelper.readCSV(sqlContext, System.getProperty("user.dir") + "/_resources/data/integrity/proxy_fixed.csv");
-        Dataset<Row> rowDatasetWithSeq = rowDataset.withColumn(SEQ_COLUMN_NAME, row_number().over(Window.partitionBy(lit(1)).orderBy(lit(1))).$plus(lit(offset)));
-//        rowDatasetWithSeq = rowDatasetWithSeq.withColumn(SEQ_COLUMN_NAME, col(SEQ_COLUMN_NAME).$plus(lit(100)));
-        rowDatasetWithSeq = rowDatasetWithSeq.select(SEQ_COLUMN_NAME, rowDataset.columns());
-        rowDatasetWithSeq.show();
-//        fileHelper.writeCSV(rowDatasetWithSeq, System.getProperty("user.dir") + "/_resources/data/integrity/proxy_fixed_with_index2.csv");
+
+        Dataset<Row> sourceData1 = fileHelper.readCSV(sparkSession.sqlContext(), System.getProperty("user.dir") + "/_resources/bigdata/QR_500K.csv");
+//        Dataset<Row> sourceData1 = fileHelper.readCSV(sparkSession.sqlContext(), System.getProperty("user.dir") + "/_resources/bigdata/4000_cols_1_row.csv");
+        long startTime = System.currentTimeMillis();
+        Dataset<Row> datasetFromRowNumber = sparkSequenceService.addSequenceUsingRowNumber(sourceData1, 400);
+        datasetFromRowNumber.write().mode("overwrite").option("header", "true").csv("/opt/tmp/csv_with_seq_RN");
+        long endTime = System.currentTimeMillis();
+        log.warn("Duration of rowNumber = {}", endTime - startTime);
+
+        Dataset<Row> sourceData2 = fileHelper.readCSV(sparkSession.sqlContext(), System.getProperty("user.dir") + "/_resources/bigdata/QR_500K.csv");
+//        Dataset<Row> sourceData2 = fileHelper.readCSV(sparkSession.sqlContext(), System.getProperty("user.dir") + "/_resources/bigdata/4000_cols_1_row.csv");
+        long startTime1 = System.currentTimeMillis();
+        Dataset<Row> datasetFromWR = sparkSequenceService.addSequenceColumnToDF(sourceData2, "/opt/tmp/csv_with_seq_WR_TMP", 800);
+        datasetFromWR.write().mode("overwrite").option("header", "true").csv("/opt/tmp/csv_with_seq_WR");
+        long endTime1 = System.currentTimeMillis();
+        log.warn("Duration of WR = {}", endTime1 - startTime1);
+
+
+
+
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    public Dataset<Row> addSequenceUsingRowNumber(Dataset<Row> rowDataset, long offset) {
+        Dataset<Row> rowDatasetWithSeq = rowDataset.withColumn(SEQ_COLUMN_NAME, row_number().over(Window.partitionBy().orderBy(lit(1))));
+        rowDatasetWithSeq = rowDatasetWithSeq.select(SEQ_COLUMN_NAME, rowDataset.columns());
+        return rowDatasetWithSeq;
+    }
 
-    public Dataset<Row> addSequenceColumnToDS(JavaRDD<String[]> nonCorruptedLines, Broadcast<List<DataFieldItem>> bHeaders, String tempPath, Broadcast<String> bDelimiter, Broadcast<Integer> bThreshold) {
-        SparkSession sparkSession =  new SparkSessionInitializer().getSparkSession();
+    public Dataset<Row> addSequenceColumnToDS(JavaRDD<String[]> nonCorruptedLines, Broadcast<List<DataFieldItem>> bHeaders, String tempPath, Broadcast<String> bDelimiter, int threshold) {
+        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession();
         Dataset<Row> dataSourceWithSeq;
-        Integer threshold = bThreshold.getValue();
         int numOfCol = bHeaders.getValue().size();
         log.info("DataSource: index threshold was set to {} while #OfFeature is {}", threshold, numOfCol);
-        if(numOfCol > threshold) {
+        if (numOfCol > threshold) {
             //Add sequence ID column while writing and reading the csv
             log.info("DataSource: Generate SEQ using WR CSV");
             dataSourceWithSeq = addDSSequenceUsingWriteRead(sparkSession, nonCorruptedLines, SEQ_COLUMN_NAME, bHeaders, tempPath, bDelimiter);
-        }else{
+        } else {
             //Add sequence ID column while using createDataFrame()
             log.info("DataSource: Generate SEQ using spark.createDataFrame()");
             JavaRDD<Row> nonCorruptedLinesRow = nonCorruptedLines.map(RowFactory::create);
@@ -84,17 +98,16 @@ public class SparkSequenceService {
         return dataSourceWithSeq;
     }
 
-    public Dataset<Row> addSequenceColumnToDF(Dataset<Row> rowDataset, String tempPath, Broadcast<Integer> bThreshold) {
-        SparkSession sparkSession =  new SparkSessionInitializer().getSparkSession();
+    public Dataset<Row> addSequenceColumnToDF(Dataset<Row> rowDataset, String tempPath, Integer threshold) {
+        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession();
         Dataset<Row> dataFrameWithSeq;
-        Integer threshold = bThreshold.getValue();
         int numOfCol = rowDataset.schema().fields().length;
         log.info("ataFrame: index threshold was set to {} while #OfFeature is {}", threshold, numOfCol);
-        if(numOfCol >  threshold) {
+        if (numOfCol > threshold) {
             //Add sequence ID column while writing and reading the csv
             log.info("DataFrame: Generate SEQ using WR CSV");
             dataFrameWithSeq = addDFSequenceUsingWriteRead(sparkSession, rowDataset, SEQ_COLUMN_NAME, tempPath);
-        }else{
+        } else {
             //Add sequence ID column while using createDataFrame()
             log.info("DataFrame: Generate SEQ using spark.createDataFrame()");
             JavaRDD<Row> rddOfRow = rowDataset.toJavaRDD();
@@ -110,13 +123,19 @@ public class SparkSequenceService {
         JavaPairRDD<Row, Long> rowLongJavaPairRDD = dataFrameToSave.toJavaRDD().zipWithIndex();
         JavaRDD<String> rddWithIndex = rowLongJavaPairRDD.map(t -> {
             Row row = t._1();
-            List<Object> values = seqAsJavaList(row.toSeq());
-            String[] strValues = values.stream().map(Object::toString).toArray(String[]::new);
-            StringWriter sWriter = new StringWriter();
-            CSVWriter csvWriter = new CSVWriter(sWriter);
-            csvWriter.writeNext(strValues);
-            csvWriter.close();
-            return t._2() + "," + sWriter.toString();
+            try {
+                List<Object> values = seqAsJavaList(row.toSeq());
+                String[] strValues = values.stream().map(Object::toString).toArray(String[]::new);
+                StringWriter sWriter = new StringWriter();
+                CSVWriter csvWriter = new CSVWriter(sWriter);
+                csvWriter.writeNext(strValues);
+                csvWriter.close();
+                return t._2() + "," + sWriter.toString();
+            }catch (Exception e){
+                log.warn("Empty row!!!!!!");
+                log.warn(row.toString());
+                return "";
+            }
         });
         writeRDDAsCsv(tempPath, rddWithIndex);
 
@@ -213,11 +232,11 @@ public class SparkSequenceService {
             log.debug("going to delete folder tree {}", tempTextDFWithIndexPath);
             FileSystem fs = FileSystem.get(new URI(tempTextDFWithIndexPath), new Configuration());
             Path path = new Path(tempTextDFWithIndexPath);
-            if(fs.exists(path)) {
+            if (fs.exists(path)) {
                 fs.delete(path, true);
             }
         } catch (IOException | URISyntaxException e) {
-            log.warn("Fail to delete temp csv file from {} : {}",tempTextDFWithIndexPath, e.getMessage());
+            log.warn("Fail to delete temp csv file from {} : {}", tempTextDFWithIndexPath, e.getMessage());
             e.printStackTrace();
         }
     }

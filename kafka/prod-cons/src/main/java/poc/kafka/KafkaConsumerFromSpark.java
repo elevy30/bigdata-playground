@@ -49,7 +49,8 @@ public class KafkaConsumerFromSpark {
         System.out.println(start);
 
         consumer.seekToEnd(partitions);
-        partitions.stream().map(value -> consumer.position(value))
+        partitions.stream()
+                .map(value -> consumer.position(value))
                 .map(val -> end.add(val));
 
         Long sum = 0l;
