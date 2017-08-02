@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:beans="http://www.springframework.org/schema/beans"
+       xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans                     http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/integration      		    http://www.springframework.org/schema/integration/spring-integration.xsd
+http://www.springframework.org/schema/integration/stream        http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
+
+    <!--xmlns:jms="http://www.springframework.org/schema/integration/jms"-->
+    <!--http://www.springframework.org/schema/integration/jms   		 http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd-->
+
+
+    <!-- message producer / a Spring Integration wrapped Java Standard input stream -->
+    <int-stream:stdin-channel-adapter id="producer"  channel="messageChannel"/>
+
+    <!-- a pair of message consumers / a pair of Spring Integration wrapped Java Standard output streams -->
+    <int-stream:stdout-channel-adapter id="consumer1" channel="messageChannel" append-newline="true"/>
+    <int-stream:stdout-channel-adapter id="consumer2" channel="messageChannel" append-newline="true"/>
+
+    <poller id="defaultPoller" default="true" max-messages-per-poll="5" fixed-rate="200"/>
+
+    <!-- a pub/sub message channel -->
+     <publish-subscribe-channel id="messageChannel" />
+
+    <!-- a direct channel without the queue, a pollable channel with the queue -->
+    <!--<channel id="messageChannel">-->
+         <!--<queue capacity="2" />-->
+    <!--</channel>-->
+
+</beans:beans>

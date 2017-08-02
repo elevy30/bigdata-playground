@@ -49,7 +49,8 @@ public class JavaActiveMQProducer implements ExceptionListener {
         // Create a ConnectionFactory
         log.info("{}", brokerHost);
         String retryConfiguration =  "";//"?maxReconnectAttempts=10&warnAfterReconnectAttempts=5";
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "failover:(tcp://" + brokerHost + ")"+ retryConfiguration);
+//        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, "failover:(tcp://" + brokerHost + ")"+ retryConfiguration);
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("failover:(tcp://" + brokerHost + ")"+ retryConfiguration);
 
         // Create a Connection
         Connection connection = connectionFactory.createConnection();

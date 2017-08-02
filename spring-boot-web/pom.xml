@@ -46,6 +46,11 @@
             <version>4.3.4.RELEASE</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>poc</groupId>
+            <artifactId>activemq</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

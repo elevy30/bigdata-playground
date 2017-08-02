@@ -21,6 +21,7 @@
         <module>scala</module>
         <module>activemq</module>
         <module>spring-integration-tutorial</module>
+        <module>camel</module>
     </modules>
 
     <build>

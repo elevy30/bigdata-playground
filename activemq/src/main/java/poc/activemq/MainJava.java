@@ -18,7 +18,7 @@ public class MainJava {
 
     private static int PRODUCER_NUM_THREAD = 10;
     private static int CONSUMER_NUM_THREAD = 5;
-    private static int NUM_OF_MSG = 100000;
+    private static int NUM_OF_MSG = 2;
 
     public static void main(String[] args) {
         try {
@@ -33,7 +33,7 @@ public class MainJava {
 
     private static void runProducer(String message) throws JMSException {
         LOGGER.info("start producer");
-        ProducerWrapper producer = new ProducerWrapper("localhost:61616","admin","admin", "test");
+        ProducerWrapper producer = new ProducerWrapper("localhost:61616","admin","admin1", "test");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> producer.send(message, NUM_OF_MSG, "java"));
     }

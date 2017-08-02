@@ -1,0 +1,103 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>spring-integration-tutorial</artifactId>
+        <groupId>poc</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <name>Spring Integration Lab 1</name>
+    <artifactId>lab1-channels</artifactId>
+    <description>Lab 1 - using channels</description>
+
+    <properties>
+        <springframework.version>4.3.6.RELEASE</springframework.version>
+        <spring.integration.version>4.3.6.RELEASE</spring.integration.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-core</artifactId>
+            <version>${spring.integration.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-stream</artifactId>
+            <version>${spring.integration.version}</version>
+        </dependency>
+
+        <!--<dependency>-->
+        <!--<groupId>org.springframework.integration</groupId>-->
+        <!--<artifactId>spring-integration-jms</artifactId>-->
+        <!--<version>4.1.6.RELEASE</version>-->
+        <!--</dependency>-->
+
+
+
+
+
+        <!--<dependency>-->
+            <!--<groupId>javax.jms</groupId>-->
+            <!--<artifactId>javax.jms-api</artifactId>-->
+            <!--<version>RELEASE</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.activemq</groupId>-->
+            <!--<artifactId>activemq-broker</artifactId>-->
+            <!--<version>5.13.1</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.activemq</groupId>-->
+            <!--<artifactId>activemq-kahadb-store</artifactId>-->
+            <!--<version>RELEASE</version>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<artifactId>*</artifactId>-->
+                    <!--<groupId>org.springframework</groupId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
+
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.22</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.14</version>
+        </dependency>
+
+    </dependencies>
+</project>
