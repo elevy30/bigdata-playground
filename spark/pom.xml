@@ -20,6 +20,8 @@
         <!--<module>spark-mllib-scala</module>-->
         <module>spark-sql</module>
         <module>spark-streaming</module>
+        <module>spark-structure-streaming</module>
+        <module>spark-protobuf</module>
     </modules>
 
     <build>

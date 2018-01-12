@@ -15,13 +15,13 @@
         <module>kafka</module>
         <module>hadoop</module>
         <module>cassandra</module>
-        <module>spring-boot-web</module>
         <!--<module>titan</module>-->
         <module>drools</module>
         <module>scala</module>
         <module>activemq</module>
         <module>spring-integration-tutorial</module>
         <module>camel</module>
+        <module>elastics</module>
     </modules>
 
     <build>

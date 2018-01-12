@@ -82,7 +82,7 @@ public class RDDToDF_CreateDataFrame {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession("RDDToDF_CreateDataFrame");
 
         RDDToDF_CreateDataFrame rddToDFCreateDataFrame = new RDDToDF_CreateDataFrame();
         rddToDFCreateDataFrame.createBigSchema(sparkSession, 0, FIELD_COUNT);

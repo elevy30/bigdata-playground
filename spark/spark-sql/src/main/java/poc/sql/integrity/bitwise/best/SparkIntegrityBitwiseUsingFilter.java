@@ -34,7 +34,7 @@ public class SparkIntegrityBitwiseUsingFilter implements Serializable {
     private SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        return sparkSessionInitializer.getSparkSession();
+        return sparkSessionInitializer.getSparkSession("SparkIntegrityBitwiseUsingFilter");
     }
 
     private void run(SparkSession sc) {

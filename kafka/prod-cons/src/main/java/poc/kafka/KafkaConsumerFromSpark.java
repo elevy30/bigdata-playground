@@ -16,7 +16,7 @@ import java.util.Properties;
 public class KafkaConsumerFromSpark {
     public static void main(String[] args) throws Exception {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", "kafka-local:9094");
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
@@ -31,11 +31,13 @@ public class KafkaConsumerFromSpark {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
+        String topicName = "profile";//"wikipedia-raw"
+
         KafkaConsumer<String, String> consumer = new KafkaConsumer(props);
         //consumer.subscribe(Arrays.asList("wikipedia-parsed"));
-        List<PartitionInfo> partitionInfos = consumer.partitionsFor("wikipedia-raw");
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(topicName);
         List<TopicPartition> partitions = new ArrayList<TopicPartition>();
-        partitions.add(new TopicPartition("wikipedia-raw", partitionInfos.get(0).partition()));
+        partitions.add(new TopicPartition(topicName, partitionInfos.get(0).partition()));
 
         List<Long> start = new ArrayList();
         List<Long> end = new ArrayList();

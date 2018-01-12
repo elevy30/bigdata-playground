@@ -39,7 +39,7 @@ public class SparkSequenceService {
 
     public static void main(String[] args) {
         SparkSequenceService sparkSequenceService = new SparkSequenceService();
-        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession();
+        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession("SparkSequenceService");
         FileHelper fileHelper = new FileHelper();
 
         Dataset<Row> sourceData1 = fileHelper.readCSV(sparkSession.sqlContext(), System.getProperty("user.dir") + "/_resources/bigdata/QR_500K.csv");
@@ -75,7 +75,7 @@ public class SparkSequenceService {
     }
 
     public Dataset<Row> addSequenceColumnToDS(JavaRDD<String[]> nonCorruptedLines, Broadcast<List<DataFieldItem>> bHeaders, String tempPath, Broadcast<String> bDelimiter, int threshold) {
-        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession();
+        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession("addSequenceColumnToDS");
         Dataset<Row> dataSourceWithSeq;
         int numOfCol = bHeaders.getValue().size();
         log.info("DataSource: index threshold was set to {} while #OfFeature is {}", threshold, numOfCol);
@@ -99,7 +99,7 @@ public class SparkSequenceService {
     }
 
     public Dataset<Row> addSequenceColumnToDF(Dataset<Row> rowDataset, String tempPath, Integer threshold) {
-        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession();
+        SparkSession sparkSession = new SparkSessionInitializer().getSparkSession("addSequenceColumnToDF");
         Dataset<Row> dataFrameWithSeq;
         int numOfCol = rowDataset.schema().fields().length;
         log.info("ataFrame: index threshold was set to {} while #OfFeature is {}", threshold, numOfCol);

@@ -22,7 +22,7 @@ public class SparkIntegrityBitwiseUsingFilter_PrepareData implements Serializabl
     private SparkSession init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        return sparkSessionInitializer.getSparkSession();
+        return sparkSessionInitializer.getSparkSession("SparkIntegrityBitwiseUsingFilter_PrepareData");
     }
 
     private void run(SparkSession sc) {

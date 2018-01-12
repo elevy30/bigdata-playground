@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration
+        xmlns="http://ch.qos.logback/xml/ns/logback"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback http://ch.qos.logback/xml/ns/logback/logback.xsd">
+
+    <property name="LOG_FILE" value="_resources/logs/structure-streaming.log"/>
+
+    <appender name="ROLLING-FILE"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>%d{yyyyMMdd_HH:mm:ss.SSS} [%thread] %highlight(%-5level) %boldCyan([%20.20logger{15}]) - %yellow(%msg %n)</pattern>
+        </encoder>
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyyMMdd_HH:mm:ss.SSS} [%thread] %highlight(%-5level) %boldCyan([%20.20logger{15}]) - %yellow(%msg %n)</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="poc.spark.streaming" level="debug" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING-FILE" />
+    </logger>
+
+    <logger name="httpclient.wire.content" level="warn">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING-FILE" />
+    </logger>
+
+    <logger name="org.spark_project" level="warn">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING-FILE" />
+    </logger>
+
+    <root level="warn">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING-FILE" />
+    </root>
+
+</configuration>

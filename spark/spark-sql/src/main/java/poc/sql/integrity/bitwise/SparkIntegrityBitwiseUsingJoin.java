@@ -36,7 +36,7 @@ public class SparkIntegrityBitwiseUsingJoin implements Serializable {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
 
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        this.sparkSession = sparkSessionInitializer.getSparkSession();
+        this.sparkSession = sparkSessionInitializer.getSparkSession("SparkIntegrityBitwiseUsingJoin");
         this.sqlContext = new SQLContext(sparkSession);
 
         this.prop = new Properties_2();

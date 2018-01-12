@@ -38,3 +38,4 @@ bigdata/
 #titan
 titan/
 titan-on-iod/
+node_modules

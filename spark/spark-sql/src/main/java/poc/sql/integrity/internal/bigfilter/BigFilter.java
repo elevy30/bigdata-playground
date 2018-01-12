@@ -128,7 +128,7 @@ public class BigFilter implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession("BigFilter");
 
         BigFilter app = new BigFilter();
         app.run(sparkSession);

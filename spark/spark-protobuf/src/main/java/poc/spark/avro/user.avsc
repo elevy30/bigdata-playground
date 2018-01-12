@@ -1,0 +1,7 @@
+{"namespace": "example.avro",
+ "type": "record",
+ "name": "User",
+ "fields": [
+     {"name":"arr",  "type": {"type": "array", "items": {"type": "string"}}}
+ ]
+}

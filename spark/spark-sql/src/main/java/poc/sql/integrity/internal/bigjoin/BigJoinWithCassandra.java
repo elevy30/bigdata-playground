@@ -66,7 +66,7 @@ public class BigJoinWithCassandra implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession("BigJoinWithCassandra");
 
         BigJoinWithCassandra app = new BigJoinWithCassandra();
         app.run(sparkSession);

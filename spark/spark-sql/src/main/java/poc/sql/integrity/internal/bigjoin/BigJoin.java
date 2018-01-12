@@ -62,7 +62,7 @@ public class BigJoin implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession("BigJoin");
 
         BigJoin app = new BigJoin();
         app.run(sparkSession);

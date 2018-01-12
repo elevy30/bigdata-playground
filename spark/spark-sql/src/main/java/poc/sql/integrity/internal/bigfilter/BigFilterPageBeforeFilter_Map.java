@@ -38,7 +38,7 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/dev/poc/_resources/hadoop_home");
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
 
-        return sparkSessionInitializer.getSparkSession();
+        return sparkSessionInitializer.getSparkSession("BigFilterPageBeforeFilter_Map");
     }
 
     private void run(SparkSession sc) {
@@ -115,7 +115,7 @@ public class BigFilterPageBeforeFilter_Map implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sessionInitializer.getSparkSession();
+        SparkSession sparkSession = sessionInitializer.getSparkSession("BigFilterPageBeforeFilter_Map");
 
         Prop prop = new Properties_1();
         BigFilterPageBeforeFilter_Map app = new BigFilterPageBeforeFilter_Map(prop);

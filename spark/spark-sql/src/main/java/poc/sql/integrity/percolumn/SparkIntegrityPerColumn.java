@@ -37,7 +37,7 @@ public class SparkIntegrityPerColumn implements Serializable {
     public void init() {
         System.setProperty("hadoop.home.dir", "Z:/Backup_Cloud/i.eyal.levy/Dropbox/01_poc/hadoop_home");
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        this.spark = sparkSessionInitializer.getSparkSession();
+        this.spark = sparkSessionInitializer.getSparkSession("SparkIntegrityPerColumn");
         this.sqlContext = new SQLContext(spark);
     }
 

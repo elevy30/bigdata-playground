@@ -91,7 +91,7 @@ public class BigJoinPageBeforeJoin implements Serializable {
 
     public static void main(String[] args) {
         SparkSessionInitializer sparkSessionInitializer = new SparkSessionInitializer();
-        SparkSession sparkSession = sparkSessionInitializer.getSparkSession();
+        SparkSession sparkSession = sparkSessionInitializer.getSparkSession("BigJoinPageBeforeJoin");
 
         BigJoinPageBeforeJoin app = new BigJoinPageBeforeJoin();
         app.run(sparkSession);
