@@ -11,17 +11,18 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>spark</module>
-        <module>kafka</module>
-        <module>hadoop</module>
-        <module>cassandra</module>
-        <!--<module>titan</module>-->
-        <module>drools</module>
-        <module>scala</module>
         <module>activemq</module>
-        <module>spring-integration-tutorial</module>
         <module>camel</module>
+        <module>cassandra</module>
+        <module>drools</module>
         <module>elastics</module>
+        <module>hadoop</module>
+        <module>kafka</module>
+        <module>scala</module>
+        <module>spark</module>
+        <module>spring-boot</module>
+        <!--<module>titan</module>-->
+        <module>spring-integration-tutorial</module>
     </modules>
 
     <build>
