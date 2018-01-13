@@ -10,7 +10,7 @@
         <version>1.4.2.RELEASE</version>
     </parent>
 
-    <artifactId>spring-boot-web</artifactId>
+    <artifactId>spring-boot-web1</artifactId>
 
     <properties>
         <java.version>1.8</java.version>

@@ -1,2 +1,3 @@
-mvn package && java -jar target/spring-boot-web-1.0-SNAPSHOT.jar
+#!/usr/bin/env bash
+mvn package && java -jar target/spring-boot-web1-1.0-SNAPSHOT.jar
 mvn spring-boot:run
