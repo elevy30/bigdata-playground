@@ -1,36 +1,26 @@
 'use strict';
 
-//let parquetjs = require('parquetjs');
-let fs = require('fs');
+const parquetjs = require('parquetjs');
 
-function example() {
+async function example() {
+    try {
+        let reader = await parquetjs.ParquetReader.openFile('iris.parquet');
 
+        // create a new cursor
+        let cursor = reader.getCursor();
+        console.log(cursor);
 
-// create new ParquetReader that reads from 'fruits.parquet`
-    //let reader = await (parquetjs.ParquetReader.openFile('iris.parquet'));
-
-    let fileDescriptor = fopen('iris.parquet');
-
-// create a new cursor
-    let cursor = reader.getCursor();
-
-// read all records from the file and print them
-    let record = null;
-    while (record = await( cursor.next())) {
-        console.log(record);
+        // read all records from the file and print them
+        let record;
+        while (record = await( cursor.next())) {
+            console.log(record);
+        }
+    } catch (e){
+        console.log(e); // or breakpoint, etc
+        throw e;
     }
-}
 
-exports.fopen = function(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.open(filePath, 'r', (err, fd) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(fd);
-            }
-        })
-    });
+
 }
 
 example();

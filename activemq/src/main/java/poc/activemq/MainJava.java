@@ -33,7 +33,7 @@ public class MainJava {
 
     private static void runProducer(String message) throws JMSException {
         LOGGER.info("start producer");
-        ProducerWrapper producer = new ProducerWrapper("localhost:61616","admin","admin1", "test");
+        ProducerWrapper producer = new ProducerWrapper("localhost:61616","admin","admin", "test");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> producer.send(message, NUM_OF_MSG, "java"));
     }
