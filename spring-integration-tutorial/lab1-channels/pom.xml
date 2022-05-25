@@ -13,7 +13,7 @@
     <description>Lab 1 - using channels</description>
 
     <properties>
-        <springframework.version>4.3.6.RELEASE</springframework.version>
+        <springframework.version>5.2.22.RELEASE</springframework.version>
         <spring.integration.version>4.3.6.RELEASE</spring.integration.version>
     </properties>
 
